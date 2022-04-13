@@ -1,6 +1,6 @@
 import json
 
-data = json.load(open("/nethome/mhahn30/floorplans/scan_levels.json"))
+data = json.load(open("./data/data_splits/{}/{}_scan_levels.json"))
 
 for scan, floors in sorted(data.items()):
     new_floors = []

@@ -120,7 +120,7 @@ if __name__ == "__main__":
     if sys.argv[2] == "noise":
         noise = True
 
-    data_splits = f"../../data_splits/{dataset}/"
+    data_splits = f"data_splits/{dataset}/"
     sim_dir = "/srv/datasets/habitat-sim-datasets/"
     if dataset == "mp3d":
         sim_dir += f"{dataset}/"

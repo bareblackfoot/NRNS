@@ -53,6 +53,7 @@ def predict_distances(agent):
     else:
         with torch.no_grad():
             geo_data, ue_nodes = gather_graph(agent)
+            agent.feat_model.module(geo_data)
             output = agent.feat_model([geo_data]).detach().cpu().squeeze(1)
             pred_dists = 10 * (1 - output)[ue_nodes]
             total_cost = add_travel_distance(agent, pred_dists, rot_thres=0.25)

@@ -251,7 +251,7 @@ if __name__ == "__main__":
         sim_dir += "gibson_train_val"
     base_dir = f"/srv/flash1/userid/topo_nav/{dataset}/"
     save_dir = base_dir + "image_nav_episodes/"
-    data_splits = f"../../data_splits/{dataset}/"
+    data_splits = f"data_splits/{dataset}/"
     scan_levels = json.load(open(data_splits + f"{dataset}_scan_levels.json"))
     test_scene_file = data_splits + "scenes_test.txt"
     with open(test_scene_file) as f:

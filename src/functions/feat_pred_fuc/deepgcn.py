@@ -52,7 +52,7 @@ class TopoGCN(nn.Module):
 
     """v2: graph conv layers"""
     def forward(self, data):
-        num_nodes = data.batch.size()[0]
+        num_nodes = data.x.size()[0]
         x = F.relu(self.conv1(data.x, data.edge_index, data.edge_attr))
         x = F.dropout(x, training=self.training)
         x = F.relu(self.conv2(x, data.edge_index, data.edge_attr))

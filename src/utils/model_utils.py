@@ -25,7 +25,7 @@ def load_resnet():
 def load_places_resnet():
     # load the pre-trained weights
     model = models.__dict__["resnet18"](num_classes=365)
-    model_file = "../../models/resnet18_places365.pth.tar"
+    model_file = "models/resnet18_places365.pth.tar"
     checkpoint = torch.load(model_file, map_location=lambda storage, loc: storage)
     state_dict = {
         str.replace(k, "module.", ""): v for k, v in checkpoint["state_dict"].items()

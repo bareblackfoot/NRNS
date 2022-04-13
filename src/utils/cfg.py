@@ -17,17 +17,17 @@ def input_paths(parser):
     parser.add_argument(
         "--sim_dir",
         type=str,
-        default="../../data/scene_datasets/",
+        default="data/scene_datasets/",
     )
     parser.add_argument(
         "--data_splits",
         type=str,
-        default="../../data/data_splits/",
+        default="data/data_splits/",
     )
     parser.add_argument(
         "--base_dir",
         type=str,
-        default="../../data/topo_nav/",
+        default="data/topo_nav/",
     )
     # generated data
     parser.add_argument(
@@ -54,17 +54,17 @@ def input_paths(parser):
     parser.add_argument(
         "--saved_model_dir",
         type=str,
-        default="../../models/",
+        default="models/",
     )
     parser.add_argument(
         "--submitit_log_dir",
         type=str,
-        default="../../logs/submitit/log_test",
+        default="logs/submitit/log_test",
     )
     parser.add_argument(
         "--summary_dir",
         type=str,
-        default="../../logs/tensorboard/",
+        default="logs/tensorboard/",
     )
 
     return parser

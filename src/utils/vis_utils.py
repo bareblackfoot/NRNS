@@ -4,13 +4,13 @@ import imageio
 import numpy as np
 from matplotlib import pyplot as plt
 from habitat.utils.visualizations import maps
+import habitat
 
 
 AGENT_SPRITE = imageio.imread(
     os.path.join(
-        "/nethome/mhahn30/Simulator/habitat-lab/habitat/utils/visualizations",
-        "assets",
-        "maps_topdown_agent_sprite",
+        "./data",
+        "mp3d_floorplans",
         "100x100.png",
     )
 )

@@ -17,7 +17,7 @@ from src.utils.noisy_actions import CustomActionSpaceConfiguration
 class NoisySensor:
     def __init__(self, noise_level):
         self.noise_level = noise_level
-        self.noise_dir = "../../models/noise_models/"
+        self.noise_dir = "models/noise_models/"
         self.sensor_noise_fwd = pickle.load(
             open(self.noise_dir + "sensor_noise_fwd.pkl", "rb")
         )

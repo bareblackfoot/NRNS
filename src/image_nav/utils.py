@@ -53,8 +53,11 @@ def load_models(args):
     model_goal.eval()
 
     """Load Distance function"""
+    # model_feat_pred = TopoGCN()
+    # model_feat_pred.load_state_dict(torch.load(args.model_dir + args.distance_model_path))#.module
+    # model_goal.to(args.device)
     model_feat_pred = TopoGCN()
-    model_feat_pred = torch.load(args.model_dir + args.distance_model_path)
+    model_feat_pred = torch.load(args.model_dir + args.distance_model_path)#.module
     print(sum(p.numel() for p in model_feat_pred.parameters()))
 
     model_feat_pred.to(args.device)
