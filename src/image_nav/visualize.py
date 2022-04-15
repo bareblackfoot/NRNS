@@ -379,7 +379,10 @@ class Visualizer:
     def create_layout(self, agent, traj):
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         output_video_name = self.args.visualization_dir + traj + ".avi"
-        vid_size = (1280, 960)
+        if self.args.panoramic:
+            vid_size = (1280*4, 960)
+        else:
+            vid_size = (1280, 960)
         vid = cv2.VideoWriter(output_video_name, fourcc, 4, vid_size)
         text = "Start Image"
         start = self.start_images[0].astype(np.uint8)
@@ -427,7 +430,7 @@ class Visualizer:
                     cv2.BORDER_CONSTANT,
                     value=[255, 255, 255],
                 )
-            two = cv2.resize(two, (640, 480))
+            two = cv2.resize(two, one.shape[:2][::-1])
             im_bottom = cv2.hconcat((one, two))
             im = cv2.vconcat((im_top, im_bottom))
             im = im.astype("uint8")

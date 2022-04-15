@@ -34,11 +34,13 @@ def gather_graph(agent):
     geo_data = Data(
         goal_feat=agent.goal_feat.clone().detach(),
         x=agent.node_feats.clone().detach()[node_list],
-        edge_index=adj,
-        edge_attr=edge_attr,
-        ue_nodes=torch.tensor(unexplored_indexs),
+        edge_index=adj.cuda(),
+        edge_attr=edge_attr.cuda(),
+        ue_nodes=torch.tensor(unexplored_indexs).cuda(),
         num_nodes=len(node_list),
     )
+    # geo_data.x = geo_data.x.cuda()
+    # geo_data.goal_feat = geo_data.goal_feat.cuda()
     return geo_data, unexplored_indexs
 
 

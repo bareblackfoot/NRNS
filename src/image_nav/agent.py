@@ -145,7 +145,7 @@ class Agent:
         if feat is not None:
             self.node_feats = torch.cat([self.node_feats, feat], dim=0)
         else:
-            feat = torch.Tensor((np.zeros(self.node_feat_size) + 0.5)).unsqueeze(0)
+            feat = torch.Tensor((np.zeros(self.node_feat_size) + 0.5)).unsqueeze(0).cuda()
             self.node_feats = torch.cat([self.node_feats, feat], dim=0)
 
     def add_edge(self, edge, attr, rot):  # edge is a list, attribute is list

@@ -11,6 +11,7 @@ parser.add_argument(
 
 parser.add_argument("--visualize", default=False, action="store_true")
 parser.add_argument("--visualization_dir", type=str, default="visualizations/")
+parser.add_argument("--panoramic", default=False, action="store_true")
 
 # Baselines
 parser.add_argument("--behavioral_cloning", default=False, action="store_true")

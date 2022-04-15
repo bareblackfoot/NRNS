@@ -13,6 +13,7 @@ from habitat.sims.habitat_simulator.actions import (
     HabitatSimV1ActionSpaceConfiguration,
 )
 from src.utils.noisy_actions import CustomActionSpaceConfiguration
+from src.utils.sensors import *
 
 class NoisySensor:
     def __init__(self, noise_level):
@@ -106,6 +107,87 @@ def set_up_habitat_noise(scene, turn_angle=15):
     config.SIMULATOR.RGB_SENSOR.HFOV = 120
     config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
     config.SIMULATOR.TURN_ANGLE = turn_angle
+    config.freeze()
+    sim = make_sim(id_sim=config.SIMULATOR.TYPE, config=config.SIMULATOR)
+    pathfinder = sim.pathfinder
+    return sim, pathfinder
+
+def add_panoramic_sensors(config):
+    num_of_camera = 12
+    cam_height = config.SIMULATOR.RGB_SENSOR.POSITION[1]
+    HFOV = 360//num_of_camera
+    assert isinstance(num_of_camera, int)
+    angles = [2 * np.pi * idx/ num_of_camera for idx in range(num_of_camera-1,-1,-1)]
+    half = num_of_camera//2
+    angles = angles[half:] + angles[:half]
+    sensors = []
+    for camera_idx in range(num_of_camera):
+        curr_angle = angles[camera_idx]
+        if curr_angle > 3.14:
+            curr_angle -= 2 * np.pi
+        new_camera_config = config.SIMULATOR.RGB_SENSOR.clone()
+        new_camera_config.TYPE = "PanoramicPartRGBSensor"
+        new_camera_config.HEIGHT = config.SIMULATOR.RGB_SENSOR.HEIGHT
+        new_camera_config.WIDTH = int(config.SIMULATOR.RGB_SENSOR.HEIGHT * 4 / num_of_camera)
+        new_camera_config.POSITION = [0, cam_height, 0]
+        new_camera_config.HFOV = HFOV
+
+        new_camera_config.ORIENTATION = [0, curr_angle, 0]
+        new_camera_config.ANGLE = "{}".format(camera_idx)
+        config.SIMULATOR.update({'RGB_SENSOR_{}'.format(camera_idx): new_camera_config})
+        sensors.append('RGB_SENSOR_{}'.format(camera_idx))
+
+        new_depth_camera_config = config.SIMULATOR.DEPTH_SENSOR.clone()
+        new_depth_camera_config.TYPE = "PanoramicPartDepthSensor"
+        new_depth_camera_config.ORIENTATION = [0, curr_angle, 0]
+        new_depth_camera_config.ANGLE = "{}".format(camera_idx)
+        new_depth_camera_config.NORMALIZE_DEPTH = True
+        new_depth_camera_config.POSITION = [0, cam_height, 0]
+        new_depth_camera_config.HEIGHT = config.SIMULATOR.RGB_SENSOR.HEIGHT
+        new_depth_camera_config.WIDTH = int(config.SIMULATOR.RGB_SENSOR.HEIGHT * 4 / num_of_camera)
+        new_depth_camera_config.HFOV = HFOV
+        config.SIMULATOR.update({'DEPTH_SENSOR_{}'.format(camera_idx): new_depth_camera_config})
+        sensors.append('DEPTH_SENSOR_{}'.format(camera_idx))
+
+    new_camera_config = config.SIMULATOR.RGB_SENSOR.clone()
+    new_camera_config.TYPE = "PanoramicRGBSensor"
+    new_camera_config.ORIENTATION = [0, 0, 0]
+    new_camera_config.POSITION = [0, cam_height, 0]
+    new_camera_config.HEIGHT = config.SIMULATOR.RGB_SENSOR.HEIGHT
+    new_camera_config.WIDTH = int(config.SIMULATOR.RGB_SENSOR.HEIGHT * 4 / num_of_camera) * num_of_camera
+    new_camera_config.NUM_CAMERA = num_of_camera
+    config.SIMULATOR.update({'PANORAMIC_SENSOR': new_camera_config})
+    sensors.append('PANORAMIC_SENSOR')
+    new_camera_config = config.SIMULATOR['PANORAMIC_SENSOR'].clone()
+    new_camera_config.TYPE = 'PanoramicDepthSensor'
+    new_camera_config.NORMALIZE_DEPTH = True
+    new_camera_config.MIN_DEPTH = 0.0
+    new_camera_config.MAX_DEPTH = 10.0
+    new_camera_config.WIDTH = int(config.SIMULATOR.RGB_SENSOR.HEIGHT * 4 / num_of_camera) * num_of_camera
+    new_camera_config.HEIGHT = config.SIMULATOR.RGB_SENSOR.HEIGHT
+    config.SIMULATOR.update({'PANORAMIC_DEPTH_SENSOR': new_camera_config})
+    sensors.append('PANORAMIC_DEPTH_SENSOR')
+    return sensors
+
+def set_up_habitat_noisy_panoramic(scene, turn_angle=15):
+    config = get_config()
+    config.defrost()
+    config.TASK.POSSIBLE_ACTIONS = config.TASK.POSSIBLE_ACTIONS + [
+        "NOISY_FORWARD",
+        "NOISY_LEFT",
+        "NOISY_RIGHT",
+    ]
+    config.TASK.ACTIONS.NOISY_FORWARD = habitat.config.Config()
+    config.TASK.ACTIONS.NOISY_FORWARD.TYPE = "NoisyForward"
+    config.TASK.ACTIONS.NOISY_LEFT = habitat.config.Config()
+    config.TASK.ACTIONS.NOISY_LEFT.TYPE = "NoisyLeft"
+    config.TASK.ACTIONS.NOISY_RIGHT = habitat.config.Config()
+    config.TASK.ACTIONS.NOISY_RIGHT.TYPE = "NoisyRight"
+    config.SIMULATOR.ACTION_SPACE_CONFIG = "CustomActionSpaceConfiguration"
+    config.SIMULATOR.SCENE = scene
+    config.SIMULATOR.AGENT_0.SENSORS = add_panoramic_sensors(config)
+    config.SIMULATOR.TURN_ANGLE = turn_angle
+    config.SIMULATOR.TYPE = "Sim-0"
     config.freeze()
     sim = make_sim(id_sim=config.SIMULATOR.TYPE, config=config.SIMULATOR)
     pathfinder = sim.pathfinder

@@ -89,8 +89,11 @@ def get_res_feats(img, resnet):
         / 255
         - mean
     ) / std
-
-    feats = resnet(img).detach().cpu().view(-1).unsqueeze(0)
+    if img.shape[0] == 1:
+        img = img.repeat(2,1,1,1)
+        feats = resnet(img)[0].view(-1).unsqueeze(0) #.detach().cpu()
+    else:
+        feats = resnet(img).view(-1).unsqueeze(0) #.detach().cpu()
     return feats
 
 

@@ -13,6 +13,7 @@ from src.image_nav.utils import load_models, evaluate_episode
 from src.utils.sim_utils import (
     set_up_habitat_noise,
     add_noise_actions_habitat,
+    set_up_habitat_noisy_panoramic
 )
 
 
@@ -27,7 +28,10 @@ def create_habitat(args, sim, current_scan):
     else:
         scene = "{}{}.glb".format(args.sim_dir, current_scan)
 
-    return set_up_habitat_noise(scene, turn_angle)
+    if args.panoramic:
+        return set_up_habitat_noisy_panoramic(scene, turn_angle)
+    else:
+        return set_up_habitat_noise(scene, turn_angle)
 
 
 def main(args):
