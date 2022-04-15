@@ -314,7 +314,7 @@ class Visualizer:
         cv2.putText(start, text, self.font_size, self.font_type, 1, self.font_color, 2)
         text = "Goal Image"
         goal = self.start_images[1].astype(np.uint8)
-        goal[:, 625:, :] = [255, 255, 255]
+        # goal[:, 625:, :] = [255, 255, 255]
         cv2.putText(goal, text, self.font_size, self.font_type, 1, (0, 0, 0), 6)
         cv2.putText(goal, text, self.font_size, self.font_type, 1, self.font_color, 2)
         im_top = cv2.hconcat((start, goal))
@@ -379,20 +379,28 @@ class Visualizer:
     def create_layout(self, agent, traj):
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         output_video_name = self.args.visualization_dir + traj + ".avi"
+        start = self.start_images[0].astype(np.uint8)
+        H, W, C = start.shape
+        H = H * 2
+        W = W * 2
         if self.args.panoramic:
-            vid_size = (1280*4, 960)
+            self.font_size = (W//2, 5)
+            font_scale = 0.1
+            font_bold_scale = 0.3
         else:
-            vid_size = (1280, 960)
+            self.font_size = (210, 35)
+            font_scale = 1
+            font_bold_scale = 1
+        vid_size = (W*2, H*2)
         vid = cv2.VideoWriter(output_video_name, fourcc, 4, vid_size)
         text = "Start Image"
-        start = self.start_images[0].astype(np.uint8)
-        cv2.putText(start, text, self.font_size, self.font_type, 1, (0, 0, 0), 6)
-        cv2.putText(start, text, self.font_size, self.font_type, 1, self.font_color, 2)
+        cv2.putText(start, text, self.font_size, self.font_type, font_scale, (0, 0, 0), int(6*font_bold_scale))
+        cv2.putText(start, text, self.font_size, self.font_type, font_scale, self.font_color, int(2*font_bold_scale))
         text = "Goal Image"
         goal = self.start_images[1].astype(np.uint8)
-        goal[:, 625:, :] = [255, 255, 255]
-        cv2.putText(goal, text, self.font_size, self.font_type, 1, (0, 0, 0), 6)
-        cv2.putText(goal, text, self.font_size, self.font_type, 1, self.font_color, 2)
+        # goal[:, 625:, :] = [255, 255, 255]
+        cv2.putText(goal, text, self.font_size, self.font_type, font_scale, (0, 0, 0), int(6*font_bold_scale))
+        cv2.putText(goal, text, self.font_size, self.font_type, font_scale, self.font_color, int(2*font_bold_scale))
         im_top = cv2.hconcat((start, goal))
         im_top = im_top.astype(np.uint8)
         two = agent.topdown_grid
@@ -404,9 +412,9 @@ class Visualizer:
                 )["rgb"][:, :, :3]
             ).astype(np.uint8)
             text = "Current Image"
-            cv2.putText(one, text, self.font_size, self.font_type, 1, (0, 0, 0), 6)
+            cv2.putText(one, text, self.font_size, self.font_type, font_scale, (0, 0, 0), int(6*font_bold_scale))
             cv2.putText(
-                one, text, self.font_size, self.font_type, 1, self.font_color, 2
+                one, text, self.font_size, self.font_type, font_scale, self.font_color, int(2*font_bold_scale)
             )
             if enum != 0:
                 if enum >= agent.switch_index:
@@ -414,13 +422,13 @@ class Visualizer:
                 else:
                     two = self.grid_map(agent.sim, agent.topdown_grid, pose[0], False)
 
-            padding = round(((two.shape[1] * 0.75) - 480) / 2)
+            padding = round(((two.shape[1] * 0.75) - H) / 2)
             if padding > 0:
                 two = cv2.copyMakeBorder(
                     two, padding, padding, 0, 0, cv2.BORDER_CONSTANT
                 )
             if padding < 0:
-                padding = round((640 - two.shape[1]) / 2)
+                padding = round((W - two.shape[1]) / 2)
                 two = cv2.copyMakeBorder(
                     two,
                     0,

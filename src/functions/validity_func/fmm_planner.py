@@ -45,9 +45,9 @@ class FMMPlanner:
             goal[1] / (self.scale * 1.0)
         )
 
-        goal_x = min(goal_x, self.traversible.shape[0])
+        goal_x = min(goal_x, self.traversible.shape[0]-1)
         goal_x = max(goal_x, 0)
-        goal_y = min(goal_y, self.traversible.shape[1])
+        goal_y = min(goal_y, self.traversible.shape[1]-1)
         goal_y = max(goal_y, 0)
 
         if self.traversible[goal_x, goal_y] == 0.0 and auto_improve:

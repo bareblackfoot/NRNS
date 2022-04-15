@@ -53,36 +53,36 @@ def localnav(agent, rho, phi, visualizer):
     )
     agent.switch_index = len(agent.prev_poses)
     agent.prev_poses.append([agent.current_pos.numpy(), agent.current_rot.numpy()])
-    try:
-        agent.sim.set_agent_state(
-            agent.current_pos.numpy(),
-            quaternion.from_float_array(agent.current_rot.numpy()),
-        )
-        local_agent = LocalAgent(
-            agent.actuation_noise,
-            agent.pose_noise,
-            agent.current_pos.numpy(),
-            agent.current_rot.numpy(),
-            map_size_cm=1200,
-            map_resolution=5,
-        )
-        final_pos, final_rot, nav_length, prev_poses = loop_nav(
-            agent.sim,
-            local_agent,
-            agent.current_pos.numpy(),
-            agent.current_rot.numpy(),
-            rho,
-            phi,
-            min(100, 499 - agent.steps),
-        )
-        if agent.visualize:
-            run_vis(agent, visualizer, prev_poses)
-        agent.prev_poses.extend(prev_poses)
-        agent.current_pos = torch.tensor(final_pos)
-        agent.current_rot = torch.tensor(final_rot)
-        agent.length_taken += nav_length
-        return np.linalg.norm(agent.goal_pos - final_pos)
-    except:
-        print("ERROR: local navigation through error")
+    # try:
+    agent.sim.set_agent_state(
+        agent.current_pos.numpy(),
+        quaternion.from_float_array(agent.current_rot.numpy()),
+    )
+    local_agent = LocalAgent(
+        agent.actuation_noise,
+        agent.pose_noise,
+        agent.current_pos.numpy(),
+        agent.current_rot.numpy(),
+        map_size_cm=1200,
+        map_resolution=5,
+    )
+    final_pos, final_rot, nav_length, prev_poses = loop_nav(
+        agent.sim,
+        local_agent,
+        agent.current_pos.numpy(),
+        agent.current_rot.numpy(),
+        rho,
+        phi,
+        min(100, 499 - agent.steps),
+    )
+    if agent.visualize:
+        run_vis(agent, visualizer, prev_poses)
+    agent.prev_poses.extend(prev_poses)
+    agent.current_pos = torch.tensor(final_pos)
+    agent.current_rot = torch.tensor(final_rot)
+    agent.length_taken += nav_length
+    return np.linalg.norm(agent.goal_pos - final_pos)
+    # except:
+    #     print("ERROR: local navigation through error")
 
     return np.linalg.norm(agent.goal_pos - agent.current_pos.numpy())
