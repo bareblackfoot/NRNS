@@ -80,6 +80,7 @@ class FMMPlanner:
         subset = dist[
             state[0] : state[0] + 2 * self.du + 1, state[1] : state[1] + 2 * self.du + 1
         ]
+        mask = mask[:subset.shape[0],:subset.shape[1]]
         subset *= mask
         subset += (1 - mask) * self.fmm_dist.shape[0] ** 2
         subset -= subset[self.du, self.du]

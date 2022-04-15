@@ -85,4 +85,4 @@ def localnav(agent, rho, phi, visualizer):
     # except:
     #     print("ERROR: local navigation through error")
 
-    return np.linalg.norm(agent.goal_pos - agent.current_pos.numpy())
+    # return np.linalg.norm(agent.goal_pos - agent.current_pos.numpy())

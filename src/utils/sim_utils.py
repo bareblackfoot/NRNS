@@ -104,6 +104,7 @@ def set_up_habitat_noise(scene, turn_angle=15):
     config.SIMULATOR.ACTION_SPACE_CONFIG = "CustomActionSpaceConfiguration"
     config.SIMULATOR.SCENE = scene
     config.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.RGB_SENSOR.HFOV = 120
     config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
     config.SIMULATOR.TURN_ANGLE = turn_angle
@@ -187,6 +188,8 @@ def set_up_habitat_noisy_panoramic(scene, turn_angle=15):
     config.SIMULATOR.SCENE = scene
     config.SIMULATOR.RGB_SENSOR.HEIGHT = 64
     config.SIMULATOR.RGB_SENSOR.WIDTH = 256
+    # config.SIMULATOR.HABITAT_SIM_V0.ALLOW_SLIDING = False
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.AGENT_0.SENSORS = add_panoramic_sensors(config)
     config.SIMULATOR.TURN_ANGLE = turn_angle
     config.SIMULATOR.TYPE = "Sim-0"
@@ -200,6 +203,7 @@ def set_up_habitat(scene):
     config = get_config()
     config.defrost()
     config.SIMULATOR.SCENE = scene
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
     config.SIMULATOR.RGB_SENSOR.HFOV = 120
     config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
