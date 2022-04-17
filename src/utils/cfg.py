@@ -17,23 +17,23 @@ def input_paths(parser):
     parser.add_argument(
         "--sim_dir",
         type=str,
-        default="data/scene_datasets/",
+        default="NRNSD/data/scene_datasets/",
     )
     parser.add_argument(
         "--data_splits",
         type=str,
-        default="data/data_splits/",
+        default="NRNSD/data/data_splits/",
     )
     parser.add_argument(
         "--base_dir",
         type=str,
-        default="data/topo_nav/",
+        default="NRNSD/data/topo_nav/",
     )
     # generated data
     parser.add_argument(
         "--trajectory_data_dir",
         type=str,
-        default="no_noise/trajectory_data/",
+        default="NRNSD/no_noise/trajectory_data/",
     )
     parser.add_argument(
         "--clustered_graph_dir",

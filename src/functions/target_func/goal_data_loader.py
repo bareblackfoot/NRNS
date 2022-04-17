@@ -4,7 +4,7 @@ import msgpack_numpy
 import copy
 import math
 from src.utils.sim_utils import get_relative_location
-
+import os
 
 class Loader:
     def __init__(self, args):
@@ -80,7 +80,7 @@ class Loader:
         )
 
     def build_dataset(self, split):
-        splitFile = self.args.data_splits + "scenes_" + split + ".txt"
+        splitFile = os.path.join("NRNSD", self.args.data_splits + "scenes_" + split + ".txt")
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
         node_feat1, node_feat2, infos = self.load_examples(splitScans)
         print("[{}]: Using {} houses".format(split, len(splitScans)))

@@ -102,9 +102,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser = input_paths(parser)   
     args = parser.parse_args() 
-    args.base_dir += f"{args.dataset}"
-    args.data_splits += f"{args.dataset}/"
-
+    # args.base_dir += f"{args.dataset}"
+    # args.data_splits += f"{args.dataset}/"
 
     dataset = "mp3d"  # "gibson"
     noise = False

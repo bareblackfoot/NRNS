@@ -71,6 +71,7 @@ class Agent:
         self.feat_model.eval()
         self.action_model = model_action
         self.action_model.eval()
+        self.device = 'cpu' #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     def reset_agent(self, start_position, start_rotation, goal_position, goal_rotation):
         self.graph = nx.Graph()
@@ -145,7 +146,7 @@ class Agent:
         if feat is not None:
             self.node_feats = torch.cat([self.node_feats, feat], dim=0)
         else:
-            feat = torch.Tensor((np.zeros(self.node_feat_size) + 0.5)).unsqueeze(0).cuda()
+            feat = torch.Tensor((np.zeros(self.node_feat_size) + 0.5)).unsqueeze(0).to(self.device)#.cuda()
             self.node_feats = torch.cat([self.node_feats, feat], dim=0)
 
     def add_edge(self, edge, attr, rot):  # edge is a list, attribute is list

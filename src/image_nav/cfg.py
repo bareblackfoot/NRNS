@@ -32,9 +32,9 @@ parser.add_argument("--sample_used", type=float, default=1.0)
 parser.add_argument("--max_steps", type=int, default=500)
 
 # Data/Input Paths
-parser.add_argument("--base_dir", type=str, default="data/topo_nav/")
-parser.add_argument("--sim_dir", type=str, default="data/scene_datasets/")
-parser.add_argument("--floorplan_dir", type=str, default="data/mp3d_floorplans/")
+parser.add_argument("--base_dir", type=str, default="NRNSD/data/topo_nav/")
+parser.add_argument("--sim_dir", type=str, default="NRNSD/data/scene_datasets/")
+parser.add_argument("--floorplan_dir", type=str, default="NRNSD/data/mp3d_floorplans/")
 
 # Models
 parser.add_argument("--model_dir", type=str, default="models/")

@@ -12,7 +12,7 @@ from habitat.sims.habitat_simulator.actions import (
 )
 from habitat.sims import make_sim
 
-noise_dir = "models/noise_models/"
+noise_dir = "/home/blackfoot/codes/NRNSD/models/noise_models/"
 actuation_noise_fwd = pickle.load(open(noise_dir + "actuation_noise_fwd.pkl", "rb"))
 actuation_noise_right = pickle.load(open(noise_dir + "actuation_noise_right.pkl", "rb"))
 actuation_noise_left = pickle.load(open(noise_dir + "actuation_noise_left.pkl", "rb"))

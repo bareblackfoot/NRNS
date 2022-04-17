@@ -126,7 +126,7 @@ if __name__ == "__main__":
         sim_dir += f"{dataset}/"
     else:
         sim_dir += "gibson_train_val/"
-    base_dir = f"/srv/flash1/userid/topo_nav/{dataset}/"
+    base_dir = f"/home/blackfoot/codes/NRNSD/data/topo_nav/{dataset}/"
     visualization_dir = base_dir + "visualizations/visualized_graphs/"
     if noise:
         trajectory_data_dir = base_dir + "noise/trajectory_data/"

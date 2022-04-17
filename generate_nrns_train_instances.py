@@ -93,7 +93,7 @@ def build_single_path(sim, episode_id):
         if sim.island_radius(source_position) < ISLAND_RADIUS_LIMIT:
             continue
         pointB = get_next_point(source_position, sim)
-        if pointB[0] is None:
+        if pointB is None:
             continue
         pointC = get_next_point(source_position, sim, origin=source_position)
 
@@ -117,7 +117,7 @@ def build_single_path(sim, episode_id):
                 sampled_trajectory.extend(shortest_pathAB)
                 goal_points.append([goal_positionAB, goal_rotationAB])
                 images.extend(imagesAB)
-                if pointC[0] is not None:
+                if pointC is not None:
                     (
                         shortest_pathBC,
                         goal_positionBC,
@@ -231,16 +231,14 @@ if __name__ == "__main__":
 
     submitit_log_dir = "/home/blackfoot/codes/NRNSD/submitit/log_test"
     executor = submitit.AutoExecutor(folder=submitit_log_dir)
-    train_scenes = train_scenes[1:]
-    for house in train_scenes:
-        generate_trajectories(house)
-    # executor.update_parameters(
-    #     slurm_gres="gpu",
-    #     slurm_cpus_per_task=6,
-    #     slurm_time=24 * 60,
-    #     slurm_partition="short",
-    #     slurm_array_parallelism=1,
-    # )
+    train_scenes = train_scenes[:1]
+    executor.update_parameters(
+        slurm_gres="gpu",
+        slurm_cpus_per_task=6,
+        slurm_time=24 * 60,
+        slurm_partition="short",
+        slurm_array_parallelism=1,
+    )
     # executor.update_parameters(
     #     slurm_gres="gpu",
     #     slurm_cpus_per_task=6,
@@ -249,18 +247,18 @@ if __name__ == "__main__":
     #     slurm_array_parallelism=30,
     # )
 
-    # jobs = []
-    #
-    # with executor.batch():
-    #     for house in train_scenes:
-    #         print("current house:", house)
-    #         jobs.append(
-    #             executor.submit(
-    #                 generate_trajectories,
-    #                 house,
-    #             )
-    #         )
-    #
-    # print("jobs started", len(jobs))
-    # for job in jobs:
-    #     print(job.results())
+    jobs = []
+
+    with executor.batch():
+        for house in train_scenes:
+            print("current house:", house)
+            jobs.append(
+                executor.submit(
+                    generate_trajectories,
+                    house,
+                )
+            )
+
+    print("jobs started", len(jobs))
+    for job in jobs:
+        print(job.results())

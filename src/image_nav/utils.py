@@ -4,6 +4,8 @@ import numpy as np
 from src.functions.target_func.switch_model import SwitchMLP
 from src.functions.target_func.goal_model import GoalMLP
 from src.functions.feat_pred_fuc.deepgcn import TopoGCN
+from model.PCL.resnet_pcl import resnet18
+import os
 
 """Evaluate Episode"""
 
@@ -51,6 +53,15 @@ def load_models(args):
     model_goal.load_state_dict(torch.load(args.model_dir + args.goal_model_path))
     model_goal.to(args.device)
     model_goal.eval()
+
+    # model_goal = resnet18(num_classes=512)
+    # dim_mlp = model_goal.fc.weight.shape[1]
+    # model_goal.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), model_goal.fc)
+    # ckpt_pth = os.path.join('Object-Graph-Memory/model/PCL', 'PCL_encoder.pth')
+    # ckpt = torch.load(ckpt_pth, map_location='cpu')
+    # model_goal.load_state_dict(ckpt)
+    # model_goal.to(args.device)
+    # model_goal.eval()
 
     """Load Distance function"""
     # model_feat_pred = TopoGCN()
