@@ -11,7 +11,7 @@ from src.data_generation.graph_data.points import (
     se3_to_mat,
     gen_points,
 )
-from src.utils.sim_utils import set_up_habitat
+from src.utils.sim_utils import set_up_habitat_panoramic
 
 """Builds graph from all the passive videos, expects feats to already be calculated"""
 
@@ -26,7 +26,8 @@ def get_scenes(pathfinder, sim, episodes, scan_name):
         feats = torch.load(featFile).squeeze(-1).squeeze(-1)
 
         """build graph"""
-        G = GraphMap(params={"feat_size": 512, "frame_size": [480, 640, 3]})
+        # G = GraphMap(params={"feat_size": 512, "frame_size": [480, 640, 3]})
+        G = GraphMap(params={"feat_size": feats.shape[-1], "frame_size": list(sim.sensor_suite.observation_spaces.spaces['rgb'].shape)})
         G.build_graph(episode, feats)
 
         """cluster graph via affinity clustering"""
@@ -98,7 +99,7 @@ def run_house(house):
         scene = "{}{}/{}.glb".format(sim_dir, house, house)
     else:
         scene = "{}/{}.glb".format(sim_dir, house)
-    sim, pathfinder = set_up_habitat(scene)
+    sim, pathfinder = set_up_habitat_panoramic(scene)
     infoFile = trajectory_data_dir + "train_instances/" + house + ".json.gz"
     with gzip.open(infoFile, "r") as fin:
         episodes = json.loads(fin.read().decode("utf-8"))
@@ -120,12 +121,18 @@ if __name__ == "__main__":
     if sys.argv[2] == "noise":
         noise = True
 
-    data_splits = f"data_splits/{dataset}/"
-    sim_dir = "/srv/datasets/habitat-sim-datasets/"
+    # data_splits = f"data_splits/{dataset}/"
+    data_splits = f"/home/blackfoot/codes/NRNSD/data/data_splits/{dataset}/"
+    sim_dir = "/home/blackfoot/programs/habitat-lab/data/scene_datasets/"
     if dataset == "mp3d":
-        sim_dir += f"{dataset}/"
+        sim_dir += "mp3d/"
     else:
-        sim_dir += "gibson_train_val/"
+        sim_dir += "gibson_train_val"
+    # sim_dir = "/srv/datasets/habitat-sim-datasets/"
+    # if dataset == "mp3d":
+    #     sim_dir += f"{dataset}/"
+    # else:
+    #     sim_dir += "gibson_train_val/"
     base_dir = f"/home/blackfoot/codes/NRNSD/data/topo_nav/{dataset}/"
     visualization_dir = base_dir + "visualizations/visualized_graphs/"
     if noise:

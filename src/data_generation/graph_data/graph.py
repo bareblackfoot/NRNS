@@ -151,7 +151,7 @@ def affinity_cluster(G):
         X.append(full_feat)
     from sklearn.cluster import AffinityPropagation
 
-    clustering = AffinityPropagation(random_state=5).fit(X)
+    clustering = AffinityPropagation().fit(X)
     labels = clustering.labels_
 
     """create new graph"""

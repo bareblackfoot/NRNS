@@ -13,7 +13,7 @@ try:
     from habitat_sim.errors import GreedyFollowerError
 except ImportError:
     GreedyFollower = BaseException
-from src.utils.sim_utils import set_up_habitat, diff_rotation
+from src.utils.sim_utils import set_up_habitat, diff_rotation, set_up_habitat_panoramic
 from habitat.utils.geometry_utils import quaternion_to_list, quaternion_from_coeff
 
 PATHS_PER_HOUSE = 5000

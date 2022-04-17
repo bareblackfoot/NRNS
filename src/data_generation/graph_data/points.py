@@ -146,7 +146,7 @@ def find_point(node, sim):
         radius,
         angles,
         proj_map,
-        wall_map,
+        # wall_map,
         exp_map,
         as_position,
         as_rotation,
