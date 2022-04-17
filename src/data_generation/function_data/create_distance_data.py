@@ -6,7 +6,7 @@ import os
 import argparse
 from src.utils.sim_utils import diff_rotation
 from src.utils.cfg import input_paths
-
+import gzip, json, sys
 """Gets the data to train the Target function from the trajectories"""
 
 """Builds graph from all the passive videos, expects feats to already be calculated"""
@@ -20,10 +20,13 @@ def get_scenes(scenes, scanName):
             scan_name = scene.split("_")[0]
         else:
             scan_name = re.match(r"([a-z]+)([0-9]+)", scene, re.I).groups()[0]
-        infoFile = trajectory_data_dir + "trajectoryInfo/" + scene + ".msg"
-        info = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)
+        infoFile = trajectory_data_dir + "train_instances/" + scene + ".json.gz"
+        with gzip.open(infoFile, "r") as fin:
+            info = json.loads(fin.read().decode("utf-8"))
+        # infoFile = trajectory_data_dir + "train_instances/" + scene + ".json.gz"
+        # info = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)
         states = info["states"]
-        featFile = trajectory_data_dir + "trajectoryFeats/" + scene + ".pt"
+        featFile = trajectory_data_dir + "train_instances/feats/" + scene + ".pt"
         feats = torch.load(featFile).squeeze(-1).squeeze(-1)
         try:
             assert len(states) == feats.shape[0]
@@ -104,13 +107,14 @@ if __name__ == "__main__":
     args = parser.parse_args() 
     # args.base_dir += f"{args.dataset}"
     # args.data_splits += f"{args.dataset}/"
-
-    dataset = "mp3d"  # "gibson"
+    print("dataset", sys.argv[1])
+    dataset = sys.argv[1] # "gibson"
     noise = False
     pose_index = 0
     if noise:
         pose_index = 2
-    
+
+    args.base_dir = f"/home/blackfoot/codes/NRNSD/data/topo_nav/"
     if noise:
         args.base_dir += f"{args.dataset}/noise/"
     else:
@@ -118,8 +122,10 @@ if __name__ == "__main__":
 
     trajectory_data_dir = args.base_dir + "trajectory_data/"
     distance_data_dir = args.base_dir + "distance_data_straight/"
-    trajectory_feats_dir = trajectory_data_dir + "trajectoryFeats/"
-    passive_scene_file = args.base_dir + "scenes_train.txt"
+    trajectory_feats_dir = trajectory_data_dir + "train_instances/feats/"
+    # passive_scene_file = args.base_dir + "scenes_train.txt"
+    data_splits = f"/home/blackfoot/codes/NRNSD/data/data_splits/{dataset}/"
+    passive_scene_file = data_splits + "scenes_train.txt"
 
     with open(passive_scene_file) as f:
         passive_scenes = sorted([line.rstrip() for line in f])
