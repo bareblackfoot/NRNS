@@ -5,12 +5,16 @@ import copy
 import math
 from src.utils.sim_utils import get_relative_location
 import os
+import gzip, json
+
 
 class Loader:
     def __init__(self, args):
         self.datasets = {}
         self.args = args
-        self.trajectory_info_dir = args.trajectory_data_dir + "trajectoryInfo/"
+        # self.trajectory_data_dir = args.base_dir + "trajectory_data/"
+        self.trajectory_info_dir = args.base_dir + "trajectory_data/train_instances/"# + scanName + ".json.gz"
+        # self.trajectory_info_dir = args.trajectory_data_dir + "trajectoryInfo/"
         self.args.distance_data_dir = args.base_dir + args.distance_data_dir
 
     def load_examples(self, splitScans):
@@ -25,6 +29,12 @@ class Loader:
             trajs = msgpack_numpy.unpack(open(trajFile, "rb"), raw=False)
             featFile = distance_data_dir + house + "_n_feats.msg"
             feats = msgpack_numpy.unpack(open(featFile, "rb"), raw=False)
+
+            infoFile = trajectory_info_dir + house + ".json.gz"
+            with gzip.open(infoFile, "r") as fin:
+                info = json.loads(fin.read().decode("utf-8"))
+            # infoFile = trajectory_info_dir + trajectory + ".msg"
+
             for d in trajs:
                 dist_ratio = d["geodesic"] / (d["euclidean"] + 0.00001)
 
@@ -54,11 +64,11 @@ class Loader:
                 node_feat1.append(feats[trajectory][str(d["n1"])])
                 node_feat2.append(feats[trajectory][str(d["n2"])])
 
-                infoFile = trajectory_info_dir + trajectory + ".msg"
-                states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
-                start_pos = states[d["n1"]][0]
-                start_rot = states[d["n1"]][1]
-                goal_pos = states[d["n2"]][0]
+                # states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
+                states = info[int(trajectory.split("_")[1])]
+                start_pos = states['poses'][d["n1"]]
+                start_rot = states['rotations'][d["n1"]]
+                goal_pos = states['poses'][d["n2"]]
                 rho, phi = get_relative_location(start_pos, start_rot, goal_pos)
 
                 infos.append(
@@ -80,8 +90,9 @@ class Loader:
         )
 
     def build_dataset(self, split):
-        splitFile = os.path.join("NRNSD", self.args.data_splits + "scenes_" + split + ".txt")
-        splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        splitFile = os.path.join("/home/blackfoot/codes", self.args.data_splits + "scenes_" + split + ".txt")
+        # splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        splitScans = ['Adrian']
         node_feat1, node_feat2, infos = self.load_examples(splitScans)
         print("[{}]: Using {} houses".format(split, len(splitScans)))
         dataset = DistanceDatset(self.args, node_feat1, node_feat2, infos)

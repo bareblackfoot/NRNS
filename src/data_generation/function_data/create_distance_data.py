@@ -14,36 +14,37 @@ import gzip, json, sys
 def get_scenes(scenes, scanName):
     pairs = []
     traj_feats = {}
+    infoFile = trajectory_data_dir + "train_instances/" + scanName + ".json.gz"
+    with gzip.open(infoFile, "r") as fin:
+        info = json.loads(fin.read().decode("utf-8"))
     for scene in scenes:
         """Load trajectory data"""
-        if dataset == "mp3d":
-            scan_name = scene.split("_")[0]
-        else:
-            scan_name = re.match(r"([a-z]+)([0-9]+)", scene, re.I).groups()[0]
-        infoFile = trajectory_data_dir + "train_instances/" + scene + ".json.gz"
-        with gzip.open(infoFile, "r") as fin:
-            info = json.loads(fin.read().decode("utf-8"))
+        # if dataset == "mp3d":
+        # scan_name = scene.split("_")[0]
+        # else:
+        #     scan_name = re.match(r"([a-z]+)([0-9]+)", scene, re.I).groups()[0]
         # infoFile = trajectory_data_dir + "train_instances/" + scene + ".json.gz"
         # info = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)
-        states = info["states"]
+        states = info[int(scene.split("_")[1])]
         featFile = trajectory_data_dir + "train_instances/feats/" + scene + ".pt"
         feats = torch.load(featFile).squeeze(-1).squeeze(-1)
-        try:
-            assert len(states) == feats.shape[0]
-        except:
-            print("error")
-            continue
+        actions = states['actions']
+        # try:
+        #     assert len(states) == feats.shape[0]
+        # except:
+        #     print("error")
+        #     continue
 
         """Loop over trajectory"""
         traj_feats[scene] = {}
         total = 0
-        for n1 in range(0, len(states), 5):
-            for n2 in range(n1 + 1, len(states), 5):
+        for n1 in range(0, len(actions), 5):
+            for n2 in range(n1 + 1, len(actions), 5):
                 # Get rotational difference between two nodes
-                quat1 = quaternion.from_float_array(states[n1][1])
-                quat2 = quaternion.from_float_array(states[n2][1])
-                agent_rotation1 = -quaternion.as_rotation_vector(quat1)[1] * 180 / np.pi
-                agent_rotation2 = -quaternion.as_rotation_vector(quat2)[1] * 180 / np.pi
+                quat1 = quaternion.from_float_array(states['rotations'][n1])
+                quat2 = quaternion.from_float_array(states['rotations'][n2])
+                agent_rotation1 = -quaternion.as_euler_angles(quat1)[1] * 180 / np.pi
+                agent_rotation2 = -quaternion.as_euler_angles(quat2)[1] * 180 / np.pi
                 rotation_diff = diff_rotation(quat1, quat2)
 
                 # Get distance between two nodes
@@ -51,14 +52,14 @@ def get_scenes(scenes, scanName):
                 for i in range(n1, n2):
                     geodesic += np.linalg.norm(
                         np.asarray(
-                            np.asarray(states[i][pose_index])
-                            - np.asarray(states[i + 1][pose_index])
+                            np.asarray(states['poses'][i])[[0, 2]]
+                            - np.asarray(states['poses'][i + 1])[[0, 2]]
                         )
                     )
                 euclidean = np.linalg.norm(
                     np.asarray(
-                        np.asarray(states[n1][pose_index])
-                        - np.asarray(states[n2][pose_index])
+                        np.asarray(states['poses'][n1])[[0, 2]]
+                        - np.asarray(states['poses'][n2])[[0, 2]]
                     )
                 )
 
@@ -67,8 +68,8 @@ def get_scenes(scenes, scanName):
                     {
                         "n1": n1,
                         "n2": n2,
-                        "agent_position1": states[n1][pose_index],
-                        "agent_position2": states[n2][pose_index],
+                        "agent_position1": states['poses'][n1],
+                        "agent_position2": states['poses'][n2],
                         "agent_rotation1": agent_rotation1,
                         "agent_rotation2": agent_rotation2,
                         "geodesic": geodesic,
@@ -76,7 +77,7 @@ def get_scenes(scenes, scanName):
                         "rotation_diff": rotation_diff,
                         "traj": scene,
                         # "floor": floor,
-                        "scan_name": scan_name,
+                        "scan_name": scanName,
                     }
                 )
                 traj_feats[scene][str(n1)] = feats[n1].detach().numpy()
@@ -99,6 +100,7 @@ def run_house(scanName):
         if scanName in s:
             scenes.append(s[:-3])
     get_scenes(scenes, scanName)
+    print(scanName)
 
 
 if __name__ == "__main__":
@@ -107,24 +109,24 @@ if __name__ == "__main__":
     args = parser.parse_args() 
     # args.base_dir += f"{args.dataset}"
     # args.data_splits += f"{args.dataset}/"
-    print("dataset", sys.argv[1])
-    dataset = sys.argv[1] # "gibson"
+    print("dataset",args.dataset)
+    # dataset = sys.argv[1] # "gibson"
     noise = False
     pose_index = 0
     if noise:
         pose_index = 2
 
     args.base_dir = f"/home/blackfoot/codes/NRNSD/data/topo_nav/"
-    if noise:
-        args.base_dir += f"{args.dataset}/noise/"
-    else:
-        args.base_dir += f"{args.dataset}/no_noise/"
+    # if noise:
+    #     args.base_dir += f"{args.dataset}/noise/"
+    # else:
+    args.base_dir += f"{args.dataset}/"
 
     trajectory_data_dir = args.base_dir + "trajectory_data/"
     distance_data_dir = args.base_dir + "distance_data_straight/"
     trajectory_feats_dir = trajectory_data_dir + "train_instances/feats/"
     # passive_scene_file = args.base_dir + "scenes_train.txt"
-    data_splits = f"/home/blackfoot/codes/NRNSD/data/data_splits/{dataset}/"
+    data_splits = f"/home/blackfoot/codes/NRNSD/data/data_splits/{args.dataset}/"
     passive_scene_file = data_splits + "scenes_train.txt"
 
     with open(passive_scene_file) as f:

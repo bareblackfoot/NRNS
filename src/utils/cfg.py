@@ -11,39 +11,39 @@ def input_paths(parser):
     parser.add_argument(
         "--dataset",
         type=str,
-        # default="gibson",
-        default="mp3d",
+        default="gibson",
+        # default="mp3d",
     )
     parser.add_argument(
         "--sim_dir",
         type=str,
-        default="NRNSD/data/scene_datasets/",
+        default="/home/blackfoot/codes/NRNSD/data/scene_datasets/",
     )
     parser.add_argument(
         "--data_splits",
         type=str,
-        default="NRNSD/data/data_splits/",
+        default="/home/blackfoot/codes/NRNSD/data/data_splits/",
     )
     parser.add_argument(
         "--base_dir",
         type=str,
-        default="NRNSD/data/topo_nav/",
+        default="/home/blackfoot/codes/NRNSD/data/topo_nav/",
     )
     # generated data
     parser.add_argument(
         "--trajectory_data_dir",
         type=str,
-        default="NRNSD/no_noise/trajectory_data/",
+        default="trajectory_data/",
     )
     parser.add_argument(
         "--clustered_graph_dir",
         type=str,
-        default="no_noise/clustered_graph/",
+        default="clustered_graph/",
     )
     parser.add_argument(
         "--distance_data_dir",
         type=str,
-        default="no_noise/distance_data_straight/",
+        default="distance_data_straight/",
     )
     parser.add_argument(
         "--action_dir",
@@ -54,7 +54,7 @@ def input_paths(parser):
     parser.add_argument(
         "--saved_model_dir",
         type=str,
-        default="models/",
+        default="/home/blackfoot/codes/NRNSD/models/",
     )
     parser.add_argument(
         "--submitit_log_dir",

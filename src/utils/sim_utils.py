@@ -288,8 +288,8 @@ def se3_to_mat(rotation: np.quaternion, translation: np.ndarray):
 
 
 def diff_rotation(quat1: np.quaternion, quat2: np.quaternion):
-    agent_rotation1 = -quaternion.as_rotation_vector(quat1)[1] * 180 / np.pi
-    agent_rotation2 = -quaternion.as_rotation_vector(quat2)[1] * 180 / np.pi
+    agent_rotation1 = -quaternion.as_euler_angles(quat1)[1] * 180 / np.pi
+    agent_rotation2 = -quaternion.as_euler_angles(quat2)[1] * 180 / np.pi
     if agent_rotation1 < 0:
         agent_rotation1 = 360 + agent_rotation1
     if agent_rotation2 < 0:
@@ -301,8 +301,8 @@ def diff_rotation(quat1: np.quaternion, quat2: np.quaternion):
 
 
 def diff_rotation_signed(quat1: np.quaternion, quat2: np.quaternion):
-    agent_rotation1 = -quaternion.as_rotation_vector(quat1)[1] * 180 / np.pi
-    agent_rotation2 = -quaternion.as_rotation_vector(quat2)[1] * 180 / np.pi
+    agent_rotation1 = -quaternion.as_euler_angles(quat1)[1] * 180 / np.pi
+    agent_rotation2 = -quaternion.as_euler_angles(quat2)[1] * 180 / np.pi
     if agent_rotation1 < 0:
         agent_rotation1 = 360 + agent_rotation1
     if agent_rotation2 < 0:
