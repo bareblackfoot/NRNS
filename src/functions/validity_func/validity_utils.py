@@ -48,9 +48,19 @@ def get_sim_location(as_pos, as_rot):
     Output:
         sim_pose: 3-dof sim pose
     """
-    x = as_pos[2]
-    y = as_pos[0]
-    o = quaternion.as_rotation_vector(as_rot)[1]
+    # x = as_pos[2]
+    # y = as_pos[0]
+    # o = quaternion.as_rotation_vector(as_rot)[1]
+
+    x = -as_pos[2]
+    y = -as_pos[0]
+    axis = quaternion.as_euler_angles(as_rot)[0]
+    if (axis % (2 * np.pi)) < 0.1 or (axis % (2 * np.pi)) > 2 * np.pi - 0.1:
+        o = quaternion.as_euler_angles(as_rot)[1]
+    else:
+        o = 2 * np.pi - quaternion.as_euler_angles(as_rot)[1]
+    if o > np.pi:
+        o -= 2 * np.pi
     sim_pose = (x, y, o)
     return sim_pose
 

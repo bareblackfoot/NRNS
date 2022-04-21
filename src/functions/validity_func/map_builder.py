@@ -86,7 +86,7 @@ class MapBuilder(object):
         depth[mask1] = np.NaN
         if self.panoramic:
             point_cloud = du.get_point_cloud_from_z_panoramic(
-                depth, self.camera_matrix, cam_angles = self.params['angles'],scale=self.du_scale
+                depth, self.camera_matrix, cam_angles = self.params['angles'], scale=self.du_scale
             )
         else:
             point_cloud = du.get_point_cloud_from_z(
@@ -104,11 +104,11 @@ class MapBuilder(object):
             agent_view_centered, self.vision_range, self.z_bins, self.resolution
         )
 
-        x1 = self.map_size_cm // (self.resolution * 2) - self.vision_range // 2
-        x2 = x1 + self.vision_range
-        y1 = self.map_size_cm // (self.resolution * 2)
-        y2 = y1 + self.vision_range
-        agent_view_cropped = agent_view_flat[:, :, 1] + agent_view_flat[:, :, 2]
+        # x1 = self.map_size_cm // (self.resolution * 2) - self.vision_range // 2
+        # x2 = x1 + self.vision_range
+        # y1 = self.map_size_cm // (self.resolution * 2)
+        # y2 = y1 + self.vision_range
+        agent_view_cropped = agent_view_flat[:, :, 1]# + agent_view_flat[:, :, 2]
 
         agent_view_cropped = agent_view_cropped / self.obs_threshold
         agent_view_cropped[agent_view_cropped >= 0.5] = 1.0
@@ -122,11 +122,11 @@ class MapBuilder(object):
         geocentric_flat, is_valids = du.bin_points(
             geocentric_pc, self.map.shape[0], self.z_bins, self.resolution
         )
-        plt.imshow(geocentric_flat)
-        plt.show()
+        # plt.imshow(geocentric_flat)
+        # plt.show()
         self.map = self.map + geocentric_flat
 
-        map_gt = (self.map[:, :, 1] + self.map[:, :, 2]) // self.obs_threshold
+        map_gt = (self.map[:, :, 1]) // self.obs_threshold # + self.map[:, :, 2]
         map_gt[map_gt >= 0.5] = 1.0
         map_gt[map_gt < 0.5] = 0.0
 
