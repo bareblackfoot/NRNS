@@ -7,7 +7,7 @@ import numpy as np
 import quaternion
 import cv2
 import skimage
-
+import matplotlib.pyplot as plt
 from src.functions.validity_func.validity_utils import *
 from src.functions.validity_func.map_builder import build_mapper
 
@@ -103,6 +103,8 @@ class LocalAgent(object):
         _, self.local_map, _, self.local_exp_map, _ = self.mapper.update_map(
             curr_depth_img[:, :, 0] * 1000.0, (x, y, o)
         )
+        plt.imshow(self.local_map)
+        plt.show()
 
         if self.collision:
             self.mapper.map[self.stg_x, self.stg_y, 1] = 10.0
