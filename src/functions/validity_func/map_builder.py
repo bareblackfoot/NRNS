@@ -6,10 +6,11 @@ import skimage
 import src.functions.validity_func.depth_utils as du
 
 
-def build_mapper(camera_height=1.25):
+def build_mapper(camera_height=1.25, panoramic=True):
     params = {}
     camera_height = 1.25
     map_size_cm = 1200
+    params["panoramic"] = panoramic
     params["frame_width"] = 640
     params["frame_height"] = 480
     params["fov"] = 120
@@ -70,10 +71,14 @@ class MapBuilder(object):
 
         mask1 = depth == 0
         depth[mask1] = np.NaN
-
-        point_cloud = du.get_point_cloud_from_z(
-            depth, self.camera_matrix, scale=self.du_scale
-        )
+        if self.panoramic:
+            point_cloud = du.get_point_cloud_from_z_panoramic(
+                depth, self.camera_matrix, scale=self.du_scale
+            )
+        else:
+            point_cloud = du.get_point_cloud_from_z(
+                depth, self.camera_matrix, scale=self.du_scale
+            )
 
         agent_view = du.transform_camera_view(
             point_cloud, self.agent_height, self.agent_view_angle

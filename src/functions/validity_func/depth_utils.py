@@ -54,6 +54,40 @@ def get_point_cloud_from_z(Y, camera_matrix, scale=1):
     return XYZ
 
 
+def get_point_cloud_from_z_panoramic(Y, camera_matrix, cam_angles, scale=1):
+    """Projects the depth image Y into a 3D point cloud.
+    Inputs:
+        Y is ...xHxW
+        camera_matrix
+    Outputs:
+        X is positive going right
+        Y is positive into the image
+        Z is positive up in the image
+        XYZ is ...xHxWx3
+    """
+    cam_lens1 = np.linspace(0, 252, 13)[:-1].astype(np.int32)
+    cam_lens2 = np.linspace(0, 252, 13)[1:].astype(np.int32)
+    point_cloud = []
+    for cam_len1, cam_len2, cam_angle in zip(cam_lens1, cam_lens2, cam_angles):
+        x, z = np.meshgrid(np.arange(Y[:,cam_len1:cam_len2].shape[-1]), np.arange(Y[:,cam_len1:cam_len2].shape[-2] - 1, -1, -1))
+        for i in range(Y.ndim - 2):
+            x = np.expand_dims(x, axis=0)
+            z = np.expand_dims(z, axis=0)
+        X = (x[::scale, ::scale] - camera_matrix.xc) * Y[:,cam_len1:cam_len2][::scale, ::scale] / camera_matrix.f
+        Z = (z[::scale, ::scale] - camera_matrix.zc) * Y[:,cam_len1:cam_len2][::scale, ::scale] / camera_matrix.f
+        XYZ = np.concatenate(
+            (X[..., np.newaxis], Y[:,cam_len1:cam_len2][::scale, ::scale][..., np.newaxis], Z[..., np.newaxis]),
+            axis=X.ndim,
+        )
+        if cam_angle > np.pi:
+            cam_angle -= 2 * np.pi
+        R = np.array([[np.cos(cam_angle), -np.sin(cam_angle), 0], [np.sin(cam_angle), np.cos(cam_angle),0], [0,0,1]])
+        XYZ = np.matmul(XYZ, R.T)
+        point_cloud.append(XYZ)
+    point_cloud = np.concatenate(point_cloud, 1)
+    return point_cloud
+
+
 def transform_camera_view(XYZ, sensor_height, camera_elevation_degree):
     """
     Transforms the point cloud into geocentric frame to account for
