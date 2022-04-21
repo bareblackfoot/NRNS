@@ -118,6 +118,7 @@ def main(args):
         rates["dist2goal"].append(dist_to_goal)
         rates["taken_path_total"].append(agent.length_taken)
         rates["gt_path_total"].append(length_shortest)
+        print(success)
 
         if success:
             rates["taken_path_success"].append(agent.length_taken)

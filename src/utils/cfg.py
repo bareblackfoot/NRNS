@@ -54,7 +54,7 @@ def input_paths(parser):
     parser.add_argument(
         "--saved_model_dir",
         type=str,
-        default="models/",
+        default="pano_models/",
     )
     parser.add_argument(
         "--submitit_log_dir",
