@@ -11,7 +11,7 @@ from src.functions.validity_func.validity_utils import (
     get_rel_pose_change,
 )
 from src.utils.sim_utils import NoisySensor
-
+import matplotlib.pyplot as plt
 
 class LocalAgent(object):
     def __init__(
@@ -64,10 +64,12 @@ class LocalAgent(object):
         )
 
         x, y, o = self.x_gt, self.y_gt, self.o_gt
+        print(x,y,o)
         _, self.local_map, _, self.local_exp_map, _ = self.mapper.update_map(
             curr_depth_img[:, :, 0] * 1000.0, (x, y, o)
         )
-
+        plt.imshow(self.local_map)
+        plt.show()
         if self.collision:
             self.mapper.map[self.stg_x, self.stg_y, 1] = 10.0
             self.collision = False
@@ -184,12 +186,13 @@ def loop_nav(sim, local_agent, start_pos, start_rot, delta_dist, delta_rot, max_
     for _ in range(max_steps):
         if local_agent.actuation_noise:
             if action == 1:
-                obs = sim.step(HabitatSimActions.MOVE_FORWARD)
+                obs = sim.step(HabitatSimActions.NOISY_FORWARD)
             elif action == 2:
-                obs = sim.step(HabitatSimActions.TURN_LEFT)
+                obs = sim.step(HabitatSimActions.NOISY_LEFT)
             elif action == 3:
-                obs = sim.step(HabitatSimActions.TURN_RIGHT)
+                obs = sim.step(HabitatSimActions.NOISY_RIGHT)
         else:
+            print("action", action)
             obs = sim.step(action)
         curr_depth_img = obs["depth"]
         curr_position = sim.get_agent_state().position

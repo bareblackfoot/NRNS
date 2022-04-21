@@ -136,12 +136,12 @@ if __name__ == "__main__":
     base_dir = f"/home/blackfoot/codes/NRNSD/data/topo_nav/{dataset}/"
     visualization_dir = base_dir + "visualizations/visualized_graphs/"
     if noise:
-        trajectory_data_dir = base_dir + "noise/trajectory_data/"
-        clustered_graph_dir = base_dir + "noise/clustered_graph/"
+        trajectory_data_dir = base_dir + "trajectory_data/noise/"
+        clustered_graph_dir = base_dir + "clustered_graph/noise/"
         print("using noise")
     else:
-        trajectory_data_dir = base_dir + "trajectory_data/"
-        clustered_graph_dir = base_dir + "clustered_graph/"
+        trajectory_data_dir = base_dir + "trajectory_data/no_noise"
+        clustered_graph_dir = base_dir + "clustered_graph/no_noise"
 
     passive_scene_file = data_splits + "scenes_passive.txt"
     with open(passive_scene_file) as f:

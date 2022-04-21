@@ -72,7 +72,7 @@ class Loader:
         print("Loading {} dataset...".format(self.args.dataset))
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
-        splitScans = ['Adrian']
+        # splitScans = ['Adrian']
         data = []
         for house in splitScans:
             houseFile = self.args.distance_data_dir + house + "_graph_distance.msg"

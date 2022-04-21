@@ -26,8 +26,8 @@ The folder `graphs/` contains code for:
     * scene
     * scan_name
 
-2. Taking the info from the simulated trajectories, storing it in a graph form and clustering the step-wise graph to a topologolgical graph. and pulling distance data out of it. 
-    Per each trajectory, the code tries to get 20 pairs of nodes and stores the following
+2. Taking the info from the simulated trajectories, storing it in a graph form and clustering the step-wise graph to a topological graph. 
+and pulling distance data out of it.  Per each trajectory, the code tries to get 20 pairs of nodes and stores the following
     * n1
     * n2
     * geodesic

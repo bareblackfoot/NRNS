@@ -37,28 +37,27 @@ class Loader:
 
             for d in trajs:
                 dist_ratio = d["geodesic"] / (d["euclidean"] + 0.00001)
-
-                if (
-                    not (
-                        abs(d["rotation_diff"]) <= 45
-                        and d["geodesic"] <= 1
-                        and d["euclidean"] <= 1
-                        and dist_ratio <= 1.1
-                    )
-                    or not (
-                        abs(d["rotation_diff"]) <= 25
-                        and d["geodesic"] <= 2.25
-                        and d["euclidean"] <= 2.25
-                        and dist_ratio <= 1.01
-                    )
-                    or not (
-                        abs(d["rotation_diff"]) <= 15
-                        and d["geodesic"] <= 3.5
-                        and d["euclidean"] <= 3.5
-                        and dist_ratio <= 1.001
-                    )
-                ):
-                    continue
+                # aa = (
+                #         abs(d["rotation_diff"]) <= 45
+                #         and d["geodesic"] <= 1
+                #         and d["euclidean"] <= 1
+                #         and dist_ratio <= 1.1
+                #     )
+                # bb = (
+                #         abs(d["rotation_diff"]) <= 25
+                #         and d["geodesic"] <= 2.25
+                #         and d["euclidean"] <= 2.25
+                #         and dist_ratio <= 1.01
+                #     )
+                # cc = (
+                #         abs(d["rotation_diff"]) <= 15
+                #         and d["geodesic"] <= 3.5
+                #         and d["euclidean"] <= 3.5
+                #         and dist_ratio <= 1.001
+                #     )
+                # if (not aa or not bb or not cc):
+                #     print(aa,bb,cc)
+                #     continue
                 trajectory = d["traj"]
 
                 node_feat1.append(feats[trajectory][str(d["n1"])])
@@ -90,9 +89,10 @@ class Loader:
         )
 
     def build_dataset(self, split):
-        splitFile = os.path.join("/home/blackfoot/codes", self.args.data_splits + "scenes_" + split + ".txt")
-        # splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
-        splitScans = ['Adrian']
+        # splitFile = os.path.join("/home/blackfoot/codes", self.args.data_splits + "scenes_" + split + ".txt")
+        splitFile = self.args.data_splits + "scenes_" + split + ".txt"
+        splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        # splitScans = ['Adrian']
         node_feat1, node_feat2, infos = self.load_examples(splitScans)
         print("[{}]: Using {} houses".format(split, len(splitScans)))
         dataset = DistanceDatset(self.args, node_feat1, node_feat2, infos)

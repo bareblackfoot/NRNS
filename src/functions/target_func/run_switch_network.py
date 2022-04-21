@@ -176,7 +176,7 @@ if __name__ == "__main__":
                 best_model = copy.deepcopy(model.get_model())
                 save_path = os.path.join(
                     args.saved_model_dir,
-                    "switch_func/",
+                    args.dataset,
                     args.run_name + "_distAcc{:.2f}_epoch{}.pt".format(val_acc, epoch),
                 )
                 torch.save(best_model.state_dict(), save_path)

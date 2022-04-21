@@ -113,6 +113,7 @@ def main(args):
         )
         if agent.steps >= args.max_steps:
             maxed_out += 1
+        print(success)
         rates["success"].append(success)
         rates["spl"].append(episode_spl)
         rates["dist2goal"].append(dist_to_goal)

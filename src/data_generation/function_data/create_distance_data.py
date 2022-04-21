@@ -127,12 +127,16 @@ if __name__ == "__main__":
     trajectory_feats_dir = trajectory_data_dir + "train_instances/feats/"
     # passive_scene_file = args.base_dir + "scenes_train.txt"
     data_splits = f"/home/blackfoot/codes/NRNSD/data/data_splits/{args.dataset}/"
-    passive_scene_file = data_splits + "scenes_train.txt"
+    train_scene_file = data_splits + "scenes_train.txt"
+    with open(train_scene_file) as f:
+        train_scenes = sorted([line.rstrip() for line in f])
+    train_scenes = sorted(train_scenes)
+    passive_scene_file = data_splits + "scenes_passive.txt"
 
     with open(passive_scene_file) as f:
         passive_scenes = sorted([line.rstrip() for line in f])
     houseList = sorted(passive_scenes)
-
+    houseList = list(set(houseList).difference(train_scenes))
     for enum, scanName in enumerate(houseList):
         print(f"Current Scan {scanName}")
         run_house(scanName)

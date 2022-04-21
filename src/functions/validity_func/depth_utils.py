@@ -18,6 +18,8 @@
 import numpy as np
 from argparse import Namespace
 import src.functions.validity_func.rotation_utils as ru
+from copy import deepcopy
+import matplotlib.pyplot as plt
 
 
 def get_camera_matrix(width, height, fov):
@@ -53,6 +55,131 @@ def get_point_cloud_from_z(Y, camera_matrix, scale=1):
     )
     return XYZ
 
+def rotate_xyz(xyz, angle):
+    # xyz = xyz.reshape(4, -1)
+    rot_mtx = np.array([[np.cos(angle * np.pi / 180), 0, np.sin(angle * np.pi / 180)], [0, 1, 0], [-np.sin(angle * np.pi / 180), 0, np.cos(angle * np.pi / 180)]])
+    out = np.matmul(rot_mtx, xyz.reshape(3, -1))
+    out = out.reshape(xyz.shape)
+    return out
+
+def cam_to_world(rotation, translation):
+    T_world_camera = np.eye(4)
+    T_world_camera[0:3, 0:3] = deepcopy(rotation)
+    T_world_camera[0:3, 3] = deepcopy(translation)
+    return T_world_camera
+
+
+def get_point_cloud_from_z_panoramic(Y, camera_matrix, cam_angles, scale=1):
+    """Projects the depth image Y into a 3D point cloud.
+    Inputs:
+        Y is ...xHxW
+        camera_matrix
+    Outputs:
+        X is positive going right
+        Y is positive into the image
+        Z is positive up in the image
+        XYZ is ...xHxWx3
+    """
+    # Y = Y/100.
+    cam_lens1 = np.linspace(0, 252, 13)[:-1].astype(np.int32)
+    cam_lens2 = np.linspace(0, 252, 13)[1:].astype(np.int32)
+    # H = Y.shape[0]
+    # W = cam_lens2[0]
+    # x, z = np.meshgrid(np.linspace(-1, 1, W), np.linspace(1, -1, H))
+    point_cloud = []
+    # hfov = float(30) * np.pi / 180
+    # K = np.array([[1/np.tan(hfov/2), 0, 0], [0, 1/np.tan(hfov/2), 0], [0,0,1]])
+    for cam_len1, cam_len2, cam_angle in zip(cam_lens1, cam_lens2, cam_angles):
+        # XYZ = np.stack((x * Y[:,cam_len1:cam_len2], z * Y[:,cam_len1:cam_len2], Y[:,cam_len1:cam_len2]))#, np.ones(Y[:,cam_len1:cam_len2].shape)))
+        # XYZ = np.linalg.inv(K) @ XYZ.reshape(3, -1)
+        # R = np.array([[np.cos(cam_angle), 0, np.sin(cam_angle)], [0, 1, 0], [-np.sin(cam_angle), 0, np.cos(cam_angle)]])
+        # XYZ = np.linalg.inv(R) @ XYZ.reshape(3, -1)
+        # XYZ = XYZ.reshape(3, H, W).transpose(1,2,0)
+
+        x, z = np.meshgrid(np.arange(Y[:,cam_len1:cam_len2].shape[-1]), np.arange(Y[:,cam_len1:cam_len2].shape[-2] - 1, -1, -1))
+        for i in range(Y.ndim - 2):
+            x = np.expand_dims(x, axis=0)
+            z = np.expand_dims(z, axis=0)
+        X = (x[::scale, ::scale] - camera_matrix.xc) * Y[:,cam_len1:cam_len2][::scale, ::scale] / camera_matrix.f
+        Z = (z[::scale, ::scale] - camera_matrix.zc) * Y[:,cam_len1:cam_len2][::scale, ::scale] / camera_matrix.f
+        XYZ = np.concatenate(
+            (X[..., np.newaxis], Y[:,cam_len1:cam_len2][::scale, ::scale][..., np.newaxis], Z[..., np.newaxis]),
+            axis=X.ndim,
+        )
+        # R = np.array([[np.cos(cam_angle), 0, np.sin(cam_angle)], [0, 1, 0], [-np.sin(cam_angle), 0, np.cos(cam_angle)]])
+        R = np.array([[np.cos(cam_angle), -np.sin(cam_angle), 0], [np.sin(cam_angle), np.cos(cam_angle),0], [0,0,1]])
+        XYZ = np.matmul(XYZ, R.T)
+        point_cloud.append(XYZ)
+    point_cloud = np.concatenate(point_cloud, 1)
+    # point_cloud = point_cloud[:,:,[0,2,1]]
+    X1 = point_cloud[:, :, 0].reshape(-1)
+    Y1 = point_cloud[:, :, 1].reshape(-1)
+    Z1 = point_cloud[:, :, 2].reshape(-1)
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.scatter(X1, Y1, Z1, s=0.5)
+    plt.xlabel('x-axis')
+    plt.ylabel('y-axis')
+    max_range = np.array([X1.max() - X1.min(), Y1.max() - Y1.min(), Z1.max() - Z1.min()]).max()
+    Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X1.max() + X1.min())
+    Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y1.max() + Y1.min())
+    Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z1.max() + Z1.min())
+    # Comment or uncomment following both lines to test the fake bounding box:
+    for xb, yb, zb in zip(Xb, Yb, Zb):
+        ax.plot([xb], [yb], [zb], 'w')
+    plt.grid()
+    plt.show()
+    return point_cloud
+
+#
+# def get_point_cloud_from_z_panoramic(Y, camera_matrix, cam_angles, scale=1):
+#     """Projects the depth image Y into a 3D point cloud.
+#     Inputs:
+#         Y is ...xHxW
+#         camera_matrix
+#     Outputs:
+#         X is positive going right
+#         Y is positive into the image
+#         Z is positive up in the image
+#         XYZ is ...xHxWx3
+#     """
+#     Y = Y/100.
+#     cam_lens1 = np.linspace(0, 252, 13)[:-1].astype(np.int32)
+#     cam_lens2 = np.linspace(0, 252, 13)[1:].astype(np.int32)
+#     H = Y.shape[0]
+#     W = cam_lens2[0]
+#     x, z = np.meshgrid(np.linspace(-1, 1, W), np.linspace(1, -1, H))
+#     point_cloud = []
+#     hfov = float(30) * np.pi / 180
+#     K = np.array([[1/np.tan(hfov/2), 0, 0], [0, 1/np.tan(hfov/2), 0], [0,0,1]])
+#     for cam_len1, cam_len2, cam_angle in zip(cam_lens1, cam_lens2, cam_angles):
+#         XYZ = np.stack((x * Y[:,cam_len1:cam_len2], z * Y[:,cam_len1:cam_len2], Y[:,cam_len1:cam_len2]))#, np.ones(Y[:,cam_len1:cam_len2].shape)))
+#         XYZ = np.linalg.inv(K) @ XYZ.reshape(3, -1)
+#         R = np.array([[np.cos(cam_angle), 0, np.sin(cam_angle)], [0, 1, 0], [-np.sin(cam_angle), 0, np.cos(cam_angle)]])
+#         XYZ = np.linalg.inv(R) @ XYZ.reshape(3, -1)
+#         XYZ = XYZ.reshape(3, H, W).transpose(1,2,0)
+#         point_cloud.append(XYZ)
+#     point_cloud = np.concatenate(point_cloud, 1)
+#     point_cloud = point_cloud[:,:,[0,2,1]]
+#     X1 = point_cloud[:, :, 0].reshape(-1)
+#     Y1 = point_cloud[:, :, 1].reshape(-1)
+#     Z1 = point_cloud[:, :, 2].reshape(-1)
+#     fig = plt.figure()
+#     ax = fig.gca(projection='3d')
+#     ax.scatter(X1, Y1, Z1, s=0.5)
+#     plt.xlabel('x-axis')
+#     plt.ylabel('y-axis')
+#     max_range = np.array([X1.max() - X1.min(), Y1.max() - Y1.min(), Z1.max() - Z1.min()]).max()
+#     Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X1.max() + X1.min())
+#     Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y1.max() + Y1.min())
+#     Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z1.max() + Z1.min())
+#     # Comment or uncomment following both lines to test the fake bounding box:
+#     for xb, yb, zb in zip(Xb, Yb, Zb):
+#         ax.plot([xb], [yb], [zb], 'w')
+#     plt.grid()
+#     plt.show()
+#     return point_cloud * 100.
+
 
 def transform_camera_view(XYZ, sensor_height, camera_elevation_degree):
     """
@@ -65,7 +192,8 @@ def transform_camera_view(XYZ, sensor_height, camera_elevation_degree):
     Output:
         XYZ : ...x3
     """
-    R = ru.get_r_matrix([1.0, 0.0, 0.0], angle=np.deg2rad(camera_elevation_degree))
+    R = ru.get_r_matrix([1.0, 0.0, 0.0], angle=camera_elevation_degree)
+    # R = ru.get_r_matrix([1.0, 0.0, 0.0], angle=np.deg2rad(camera_elevation_degree))
     XYZ = np.matmul(XYZ.reshape(-1, 3), R.T).reshape(XYZ.shape)
     XYZ[..., 2] = XYZ[..., 2] + sensor_height
     return XYZ

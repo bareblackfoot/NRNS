@@ -6,13 +6,26 @@ import skimage
 import src.functions.validity_func.depth_utils as du
 
 
-def build_mapper(camera_height=1.25):
+def build_mapper(camera_height=1.25, panoramic=True):
     params = {}
     camera_height = 1.25
     map_size_cm = 1200
-    params["frame_width"] = 640
-    params["frame_height"] = 480
-    params["fov"] = 120
+    params["panoramic"] = panoramic
+    if panoramic:
+        num_of_camera = 12
+        HFOV = 360 // num_of_camera
+        assert isinstance(num_of_camera, int)
+        angles = [2 * np.pi * idx / num_of_camera for idx in range(num_of_camera - 1, -1, -1)]
+        half = num_of_camera // 2
+        angles = angles[half:] + angles[:half]
+        params["frame_height"] = 64
+        params["frame_width"] = int(params["frame_height"] * 4 / num_of_camera)
+        params["fov"] = HFOV
+        params["angles"] = angles
+    else:
+        params["frame_width"] = 640
+        params["frame_height"] = 480
+        params["fov"] = 120
     params["resolution"] = 5
     params["map_size_cm"] = map_size_cm
     params["agent_min_z"] = 25
@@ -37,6 +50,7 @@ class MapBuilder(object):
         frame_height = params["frame_height"]
         fov = params["fov"]
         self.camera_matrix = du.get_camera_matrix(frame_width, frame_height, fov)
+        self.panoramic = params["panoramic"]
         self.vision_range = params["vision_range"]
         self.map_size_cm = params["map_size_cm"]
         self.resolution = params["resolution"]
@@ -70,10 +84,14 @@ class MapBuilder(object):
 
         mask1 = depth == 0
         depth[mask1] = np.NaN
-
-        point_cloud = du.get_point_cloud_from_z(
-            depth, self.camera_matrix, scale=self.du_scale
-        )
+        if self.panoramic:
+            point_cloud = du.get_point_cloud_from_z_panoramic(
+                depth, self.camera_matrix, cam_angles = self.params['angles'],scale=self.du_scale
+            )
+        else:
+            point_cloud = du.get_point_cloud_from_z(
+                depth, self.camera_matrix, scale=self.du_scale
+            )
 
         agent_view = du.transform_camera_view(
             point_cloud, self.agent_height, self.agent_view_angle
@@ -104,7 +122,8 @@ class MapBuilder(object):
         geocentric_flat, is_valids = du.bin_points(
             geocentric_pc, self.map.shape[0], self.z_bins, self.resolution
         )
-
+        plt.imshow(geocentric_flat)
+        plt.show()
         self.map = self.map + geocentric_flat
 
         map_gt = (self.map[:, :, 1] + self.map[:, :, 2]) // self.obs_threshold

@@ -232,24 +232,21 @@ if __name__ == "__main__":
 
     submitit_log_dir = "/home/blackfoot/codes/NRNSD/submitit/log_test"
     executor = submitit.AutoExecutor(folder=submitit_log_dir)
-    train_scenes = train_scenes[1:]
+    # train_scenes = train_scenes[15:30]
+    # train_scenes = train_scenes[30:40]
+    # train_scenes = train_scenes[40:50]
+    # train_scenes = train_scenes[50:60]
+    train_scenes = train_scenes[-1:]
     for house in train_scenes:
         generate_trajectories(house)
     # executor.update_parameters(
-    #     slurm_gres="gpu",
-    #     slurm_cpus_per_task=6,
-    #     slurm_time=24 * 60,
-    #     slurm_partition="short",
-    #     slurm_array_parallelism=1,
-    # )
-    # executor.update_parameters(
-    #     slurm_gres="gpu",
+    #     slurm_gres="gpu:1",
     #     slurm_cpus_per_task=6,
     #     slurm_time=24 * 60,
     #     slurm_partition="short",
     #     slurm_array_parallelism=30,
     # )
-
+    #
     # jobs = []
     #
     # with executor.batch():
@@ -265,3 +262,4 @@ if __name__ == "__main__":
     # print("jobs started", len(jobs))
     # for job in jobs:
     #     print(job.results())
+#

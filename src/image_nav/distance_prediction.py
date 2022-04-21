@@ -32,8 +32,8 @@ def gather_graph(agent):
             unexplored_indexs.append(i)
 
     geo_data = Data(
-        goal_feat=agent.goal_feat.clone().detach(),
-        x=agent.node_feats.clone().detach()[node_list],
+        goal_feat=agent.goal_feat.cuda(),
+        x=agent.node_feats.cuda()[node_list],
         edge_index=adj.cuda(),
         edge_attr=edge_attr.cuda(),
         ue_nodes=torch.tensor(unexplored_indexs).cuda(),
