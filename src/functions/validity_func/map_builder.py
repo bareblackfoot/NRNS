@@ -8,7 +8,7 @@ import src.functions.validity_func.depth_utils as du
 
 def build_mapper(camera_height=1.25, panoramic=True):
     params = {}
-    camera_height = 1.25
+    # camera_height = 1.25
     map_size_cm = 1200
     params["panoramic"] = panoramic
     if panoramic:
