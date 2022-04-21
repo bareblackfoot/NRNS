@@ -104,6 +104,7 @@ def set_up_habitat_noise(scene, turn_angle=15):
     config.SIMULATOR.ACTION_SPACE_CONFIG = "CustomActionSpaceConfiguration"
     config.SIMULATOR.SCENE = scene
     config.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.RGB_SENSOR.HFOV = 120
     config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
     config.SIMULATOR.TURN_ANGLE = turn_angle
@@ -185,6 +186,31 @@ def set_up_habitat_noisy_panoramic(scene, turn_angle=15):
     config.TASK.ACTIONS.NOISY_RIGHT.TYPE = "NoisyRight"
     config.SIMULATOR.ACTION_SPACE_CONFIG = "CustomActionSpaceConfiguration"
     config.SIMULATOR.SCENE = scene
+    config.SIMULATOR.RGB_SENSOR.HEIGHT = 64
+    config.SIMULATOR.RGB_SENSOR.WIDTH = 256
+    # config.SIMULATOR.HABITAT_SIM_V0.ALLOW_SLIDING = False
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
+    config.SIMULATOR.AGENT_0.SENSORS = add_panoramic_sensors(config)
+    config.SIMULATOR.TURN_ANGLE = turn_angle
+    config.SIMULATOR.TYPE = "Sim-0"
+    config.freeze()
+    sim = make_sim(id_sim=config.SIMULATOR.TYPE, config=config.SIMULATOR)
+    pathfinder = sim.pathfinder
+    return sim, pathfinder
+
+def set_up_habitat_panoramic(scene, turn_angle=15):
+    config = get_config()
+    config.defrost()
+    config.SIMULATOR.SCENE = scene
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
+    config.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
+    config.SIMULATOR.RGB_SENSOR.HFOV = 120
+    config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
+    config.SIMULATOR.TURN_ANGLE = 15
+    config.SIMULATOR.RGB_SENSOR.HEIGHT = 64
+    config.SIMULATOR.RGB_SENSOR.WIDTH = 256
+    # config.SIMULATOR.HABITAT_SIM_V0.ALLOW_SLIDING = False
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.AGENT_0.SENSORS = add_panoramic_sensors(config)
     config.SIMULATOR.TURN_ANGLE = turn_angle
     config.SIMULATOR.TYPE = "Sim-0"
@@ -198,6 +224,7 @@ def set_up_habitat(scene):
     config = get_config()
     config.defrost()
     config.SIMULATOR.SCENE = scene
+    # config.SIMULATOR.AGENT_0.RADIUS = 0.18
     config.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
     config.SIMULATOR.RGB_SENSOR.HFOV = 120
     config.SIMULATOR.DEPTH_SENSOR.HFOV = 120
@@ -216,7 +243,6 @@ def get_geodesic_dist(pathfinder, start_pos, goal_pos):
     pathfinder.find_path(path)
     geodesic_distance = path.geodesic_distance
     return geodesic_distance
-
 
 def get_num_steps(sim, start_pos, start_rot, goal_pos):
     try:
