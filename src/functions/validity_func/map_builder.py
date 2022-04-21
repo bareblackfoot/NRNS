@@ -11,9 +11,24 @@ def build_mapper(camera_height=1.25, panoramic=True):
     camera_height = 1.25
     map_size_cm = 1200
     params["panoramic"] = panoramic
-    params["frame_width"] = 640
-    params["frame_height"] = 480
-    params["fov"] = 120
+    if panoramic:
+        num_of_camera = 12
+        HFOV = 360 // num_of_camera
+        assert isinstance(num_of_camera, int)
+        angles = [2 * np.pi * idx / num_of_camera for idx in range(num_of_camera - 1, -1, -1)]
+        half = num_of_camera // 2
+        angles = angles[half:] + angles[:half]
+        params["frame_height"] = 64
+        params["frame_width"] = int(params["frame_height"] * 4 / num_of_camera)
+        params["fov"] = HFOV
+        params["angles"] = angles
+    else:
+        params["frame_width"] = 640
+        params["frame_height"] = 480
+        params["fov"] = 120
+    # params["frame_width"] = 640
+    # params["frame_height"] = 480
+    # params["fov"] = 120
     params["resolution"] = 5
     params["map_size_cm"] = map_size_cm
     params["agent_min_z"] = 25
@@ -36,6 +51,8 @@ class MapBuilder(object):
         self.params = params
         frame_width = params["frame_width"]
         frame_height = params["frame_height"]
+        self.panoramic = params["panoramic"]
+        self.camera_angles = params["angles"]
         fov = params["fov"]
         self.camera_matrix = du.get_camera_matrix(frame_width, frame_height, fov)
         self.vision_range = params["vision_range"]
@@ -73,7 +90,7 @@ class MapBuilder(object):
         depth[mask1] = np.NaN
         if self.panoramic:
             point_cloud = du.get_point_cloud_from_z_panoramic(
-                depth, self.camera_matrix, scale=self.du_scale
+                depth, self.camera_matrix, self.camera_angles, scale=self.du_scale
             )
         else:
             point_cloud = du.get_point_cloud_from_z(
