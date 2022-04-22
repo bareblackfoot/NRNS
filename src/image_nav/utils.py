@@ -58,11 +58,8 @@ def load_models(args):
 
     """Load Distance function"""
     """갈 수 있는지 없는지 확인(explorable 한지 아닌지)"""
-    # model_feat_pred = TopoGCN()
-    # model_feat_pred.load_state_dict(torch.load(args.model_dir + args.distance_model_path))#.module
-    # model_goal.to(args.device)
     model_feat_pred = TopoGCN()
-    model_feat_pred = torch.load(args.model_dir + args.distance_model_path)#.module
+    model_feat_pred = torch.load(args.model_dir + args.distance_model_path)
     print(sum(p.numel() for p in model_feat_pred.parameters()))
 
     model_feat_pred.to(args.device)

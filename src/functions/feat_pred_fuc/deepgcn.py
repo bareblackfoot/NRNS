@@ -60,12 +60,12 @@ class TopoGCN(nn.Module):
         x = F.relu(self.conv3(x, data.edge_index))
         x = F.dropout(x, training=self.training)
         x = F.relu(self.conv4(x, data.edge_index))
-        print(x.shape)
-        print(data.goal_feat.shape)
-        print(num_nodes)
-        print(data.goal_feat.repeat(num_nodes, 1).shape)
+        # print(x.shape)
+        # print(data.goal_feat.shape)
+        # print(num_nodes)
+        # print(data.goal_feat.repeat(num_nodes, 1).shape)
         pred_dist = self.distance_layers(
-            torch.cat((x, data.goal_feat.repeat(num_nodes, 1)), dim=1)
+            torch.cat((x, data.goal_feat[data.batch]), dim=1)
         )
 
         return pred_dist

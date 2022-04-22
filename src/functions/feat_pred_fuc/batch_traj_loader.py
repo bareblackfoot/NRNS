@@ -71,7 +71,7 @@ class Loader:
 
         # goal image and distances
         labels = []
-        goal_feat = np.asarray(data_obj["nodes"]["feat"][goal_index])[:,None]
+        goal_feat = np.asarray(data_obj["nodes"]["feat"][goal_index])[None]
         for ind in range(0, index):
             dist_score = (
                 1 - min(self.geo_dist(ind, goal_index, data_obj) ** 2, 10.0) / 10.0
