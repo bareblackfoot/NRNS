@@ -18,7 +18,7 @@ def load_resnet():
     resnet = models.resnet18(pretrained=True)
     resnet = nn.Sequential(*(list(resnet.children())[:-1]))
     resnet.eval()
-    resnet.to("cuda")
+    resnet.to("cpu")
     return resnet
 
 
@@ -33,7 +33,7 @@ def load_places_resnet():
     model.load_state_dict(state_dict)
     model = nn.Sequential(*(list(model.children())[:-1]))
     model.eval()
-    model.to("cuda")
+    model.to("cpu")
     return model
 
 
@@ -91,9 +91,9 @@ def get_res_feats(img, resnet):
     ) / std
     if img.shape[0] == 1:
         img = img.repeat(2,1,1,1)
-        feats = resnet(img)[0].view(-1).unsqueeze(0) #.detach().cpu()
+        feats = resnet(img)[0].view(-1).unsqueeze(0).detach().cpu()
     else:
-        feats = resnet(img).view(-1).unsqueeze(0) #.detach().cpu()
+        feats = resnet(img).view(-1).unsqueeze(0).detach().cpu()
     return feats
 
 

@@ -49,9 +49,11 @@ class TopoGCN(nn.Module):
     #     )  # distance score is between 0 - 1 but represents 0m - 10m+
     #     return pred_dist
 
-
     """v2: graph conv layers"""
     def forward(self, data):
+        for v in data:
+            if "cuda" in str(v[1].device):
+                data[str(v[0])] = v[1].cpu()
         num_nodes = data.x.size()[0]
         x = F.relu(self.conv1(data.x, data.edge_index, data.edge_attr))
         x = F.dropout(x, training=self.training)
@@ -70,7 +72,7 @@ class TopoGCN(nn.Module):
 class XRN(object):
     def __init__(self, opt):
         self.dist_criterion = torch.nn.MSELoss()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = TopoGCN()
         self.model = DataParallel(self.model)
         self.model = self.model.to(self.device)

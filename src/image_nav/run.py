@@ -53,7 +53,7 @@ def main(args):
     visualizer = Visualizer(args)
 
     """Load Models"""
-    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    args.device = "cpu" #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     resnet = load_places_resnet()
     model_switch, model_goal, model_feat_pred, model_action = load_models(args)
     print("finished loading models.")

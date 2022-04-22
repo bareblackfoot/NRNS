@@ -31,16 +31,22 @@ def gather_graph(agent):
         if agent.graph.nodes.data()[n]["status"] == "unexplored":
             unexplored_indexs.append(i)
 
+    # geo_data = Data(
+    #     goal_feat=agent.goal_feat.clone().detach(),
+    #     x=agent.node_feats.clone().detach()[node_list],
+    #     edge_index=adj.cuda(),
+    #     edge_attr=edge_attr.cuda(),
+    #     ue_nodes=torch.tensor(unexplored_indexs).cuda(),
+    #     num_nodes=len(node_list),
+    # )
     geo_data = Data(
-        goal_feat=agent.goal_feat.clone().detach(),
-        x=agent.node_feats.clone().detach()[node_list],
-        edge_index=adj.cuda(),
-        edge_attr=edge_attr.cuda(),
-        ue_nodes=torch.tensor(unexplored_indexs).cuda(),
+        goal_feat=agent.goal_feat.clone().detach().cpu(),
+        x=agent.node_feats.clone().detach()[node_list].cpu(),
+        edge_index=adj.detach().cpu(),
+        edge_attr=edge_attr.detach().cpu(),
+        ue_nodes=torch.tensor(unexplored_indexs).detach().cpu(),
         num_nodes=len(node_list),
     )
-    # geo_data.x = geo_data.x.cuda()
-    # geo_data.goal_feat = geo_data.goal_feat.cuda()
     return geo_data, unexplored_indexs
 
 
