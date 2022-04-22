@@ -29,7 +29,9 @@ def calculate_spl(success, length_shortest, length_taken):
 
 
 def load_models(args):
+    """Load models"""
     """Action Pred function"""
+    """BC로 action prediction 할때만 사용"""
     if args.bc_type == "map":
         from src.functions.bc_func.bc_map_network import ActionNetwork
     else:

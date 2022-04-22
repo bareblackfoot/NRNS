@@ -14,10 +14,10 @@ def make_traj_msg(episodes, scan_name):
             episode['states'].append((pose, rot))
         msgpack_numpy.pack(
             episode,
-            open(save_dir + episode_id + "_graphs.msg", "wb"),
+            open(save_dir + episode_id + ".msg", "wb"),
             use_bin_type=True,
         )
-        print("saved at " + save_dir + episode_id + "_graphs.msg")
+        print("saved at " + save_dir + episode_id + ".msg")
 
 
 def run_house(house):
