@@ -53,7 +53,7 @@ def main(args):
     visualizer = Visualizer(args)
 
     """Load Models"""
-    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    args.device = "cpu" #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     resnet = load_places_resnet()
     model_switch, model_goal, model_feat_pred, model_action = load_models(args)
     print("finished loading models.")
@@ -67,7 +67,11 @@ def main(args):
     with gzip.open(jsonfilename, "r") as fin:
         data = json.loads(fin.read().decode("utf-8"))["episodes"]
     """Loop over test episodes"""
-    for instance in tqdm.tqdm(data):
+    cnt = 0
+    scan_id = 0
+    tot_space_num = 14
+    with tqdm.tqdm(total=len(data)) as pbar:
+        instance = data[cnt]
         scan_name = instance["scene_id"].split("/")[-1].split(".")[0]
         episode_id = instance["episode_id"]
         length_shortest = instance["length_shortest"]
@@ -78,6 +82,7 @@ def main(args):
             print(current_scan)
             sim, pathfinder = create_habitat(args, sim, current_scan)
             visCounter[current_scan] = 0
+            scan_id += 1
 
         """ Image nav agent per episode"""
         agent = Agent(
@@ -131,6 +136,14 @@ def main(args):
                 visualizer.create_layout_mp3d(episode_id)
             else:
                 visualizer.create_layout(agent, episode_id)
+        pbar.update(1)
+        pbar.set_description('Total %05d, %s SPACE[%03d/%03d] success %.3f spl %.3f' % (len(data),
+                                                                               scan_name,
+                                                                               scan_id + 1,
+                                                                               tot_space_num,
+                                                                               np.mean(rates['success']),
+                                                                               np.mean(rates['spl'])))
+        cnt += 1
 
     """Print Stats"""
     print("\nType of Run: ")

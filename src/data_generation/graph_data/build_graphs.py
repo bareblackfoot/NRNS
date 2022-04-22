@@ -23,10 +23,12 @@ def get_scenes(pathfinder, sim, episodes, scan_name):
         """load data"""
         episode_id = episode["episode_id"]
         featFile = trajectory_data_dir + "train_instances/feats/" + episode_id + ".pt"
+        # featFile = trajectory_data_dir + "trajectoryFeats/" + episode_id + ".pt"
         feats = torch.load(featFile).squeeze(-1).squeeze(-1)
 
         """build graph"""
-        G = GraphMap(params={"feat_size": 512, "frame_size": [480, 640, 3]})
+        # G = GraphMap(params={"feat_size": 512, "frame_size": [480, 640, 3]})
+        G = GraphMap(params={"feat_size": feats.shape[-1], "frame_size": list(sim.sensor_suite.observation_spaces.spaces['rgb'].shape)})
         G.build_graph(episode, feats)
 
         """cluster graph via affinity clustering"""
@@ -126,15 +128,15 @@ if __name__ == "__main__":
         sim_dir += f"{dataset}/"
     else:
         sim_dir += "gibson_train_val/"
-    base_dir = f"/srv/flash1/userid/topo_nav/{dataset}/"
+    base_dir = f"./data/topo_nav/{dataset}/"
     visualization_dir = base_dir + "visualizations/visualized_graphs/"
     if noise:
         trajectory_data_dir = base_dir + "noise/trajectory_data/"
         clustered_graph_dir = base_dir + "noise/clustered_graph/"
         print("using noise")
     else:
-        trajectory_data_dir = base_dir + "trajectory_data/"
-        clustered_graph_dir = base_dir + "clustered_graph/"
+        trajectory_data_dir = base_dir + "no_noise/trajectory_data/"
+        clustered_graph_dir = base_dir + "no_noise/clustered_graph/"
 
     passive_scene_file = data_splits + "scenes_passive.txt"
     with open(passive_scene_file) as f:

@@ -16,7 +16,7 @@ def get_scenes(scenes, scanName):
     traj_feats = {}
     for scene in scenes:
         """Load trajectory data"""
-        if dataset == "mp3d":
+        if args.dataset == "mp3d":
             scan_name = scene.split("_")[0]
         else:
             scan_name = re.match(r"([a-z]+)([0-9]+)", scene, re.I).groups()[0]
@@ -104,9 +104,6 @@ if __name__ == "__main__":
     args = parser.parse_args() 
     args.base_dir += f"{args.dataset}"
     args.data_splits += f"{args.dataset}/"
-
-
-    dataset = "mp3d"  # "gibson"
     noise = False
     pose_index = 0
     if noise:
@@ -120,7 +117,7 @@ if __name__ == "__main__":
     trajectory_data_dir = args.base_dir + "trajectory_data/"
     distance_data_dir = args.base_dir + "distance_data_straight/"
     trajectory_feats_dir = trajectory_data_dir + "trajectoryFeats/"
-    passive_scene_file = args.base_dir + "scenes_train.txt"
+    passive_scene_file = args.data_splits + "scenes_train.txt"
 
     with open(passive_scene_file) as f:
         passive_scenes = sorted([line.rstrip() for line in f])

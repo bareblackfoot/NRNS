@@ -37,7 +37,7 @@ parser.add_argument("--sim_dir", type=str, default="data/scene_datasets/")
 parser.add_argument("--floorplan_dir", type=str, default="data/mp3d_floorplans/")
 
 # Models
-parser.add_argument("--model_dir", type=str, default="models/")
+parser.add_argument("--model_dir", type=str, default="pano_models/")
 parser.add_argument(
     "--distance_model_path",
     type=str,

@@ -40,6 +40,7 @@ def load_models(args):
     model_action.eval()
 
     """Load Switch function"""
+    """stop 할지 안할지 결정"""
     model_switch = SwitchMLP()
     model_switch.load_state_dict(torch.load(args.model_dir + args.switch_model_path))
     print(sum(p.numel() for p in model_switch.parameters()))
@@ -47,12 +48,14 @@ def load_models(args):
     model_switch.eval()
 
     """Load Target function"""
+    """local goal 위치 예측 (rotation, location)"""
     model_goal = GoalMLP()
     model_goal.load_state_dict(torch.load(args.model_dir + args.goal_model_path))
     model_goal.to(args.device)
     model_goal.eval()
 
     """Load Distance function"""
+    """갈 수 있는지 없는지 확인(explorable 한지 아닌지)"""
     # model_feat_pred = TopoGCN()
     # model_feat_pred.load_state_dict(torch.load(args.model_dir + args.distance_model_path))#.module
     # model_goal.to(args.device)
