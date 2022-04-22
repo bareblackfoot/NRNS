@@ -11,7 +11,7 @@ from src.functions.validity_func.validity_utils import (
     get_rel_pose_change,
 )
 from src.utils.sim_utils import NoisySensor
-
+import matplotlib.pyplot as plt
 
 class LocalAgent(object):
     def __init__(
@@ -67,6 +67,8 @@ class LocalAgent(object):
         _, self.local_map, _, self.local_exp_map, _ = self.mapper.update_map(
             curr_depth_img[:, :, 0] * 1000.0, (x, y, o)
         )
+        # plt.imshow(self.local_map)
+        # plt.show()
 
         if self.collision:
             self.mapper.map[self.stg_x, self.stg_y, 1] = 10.0
