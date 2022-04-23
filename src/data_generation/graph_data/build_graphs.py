@@ -1,4 +1,5 @@
 import sys
+sys.path.append("/home/blackfoot/codes/NRNSD")
 import numpy as np
 import quaternion
 import torch
@@ -11,7 +12,9 @@ from src.data_generation.graph_data.points import (
     se3_to_mat,
     gen_points,
 )
-from src.utils.sim_utils import set_up_habitat
+from src.utils.sim_utils import set_up_habitat_panoramic as set_up_habitat
+from src.utils.cfg import input_paths
+import argparse
 
 """Builds graph from all the passive videos, expects feats to already be calculated"""
 
@@ -22,8 +25,8 @@ def get_scenes(pathfinder, sim, episodes, scan_name):
     for episode in episodes:
         """load data"""
         episode_id = episode["episode_id"]
-        featFile = trajectory_data_dir + "train_instances/feats/" + episode_id + ".pt"
-        # featFile = trajectory_data_dir + "trajectoryFeats/" + episode_id + ".pt"
+        # featFile = trajectory_data_dir + "train_instances/feats/" + episode_id + ".pt"
+        featFile = trajectory_data_dir + "trajectoryFeats/" + episode_id + ".pt"
         feats = torch.load(featFile).squeeze(-1).squeeze(-1)
 
         """build graph"""
@@ -96,7 +99,7 @@ def get_scenes(pathfinder, sim, episodes, scan_name):
 
 
 def run_house(house):
-    if dataset == "mp3d":
+    if args.dataset == "mp3d":
         scene = "{}{}/{}.glb".format(sim_dir, house, house)
     else:
         scene = "{}/{}.glb".format(sim_dir, house)
@@ -110,35 +113,30 @@ def run_house(house):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        raise Exception("missing dataset argument-- Options: 'gibson' or 'mp3d'")
-    print("dataset:", sys.argv[1])
-    dataset = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser = input_paths(parser)
+    args = parser.parse_args()
+    args.base_dir += f"{args.dataset}/"
+    args.data_splits += f"{args.dataset}/"
+    args.trajectory_data_dir = f"{args.base_dir}{args.trajectory_data_dir}"
 
-    if len(sys.argv) < 3:
-        raise Exception("missing noise argument-- Options: 'no_noise' or 'noise'")
-    noise = False
-    print("noise on:", sys.argv[2])
-    if sys.argv[2] == "noise":
-        noise = True
-
-    data_splits = f"data_splits/{dataset}/"
-    sim_dir = "/srv/datasets/habitat-sim-datasets/"
-    if dataset == "mp3d":
-        sim_dir += f"{dataset}/"
+    # data_splits = f"data_splits/{args.dataset}/"
+    sim_dir = "./data/scene_datasets/"
+    if args.dataset == "mp3d":
+        sim_dir += "mp3d/"
     else:
-        sim_dir += "gibson_train_val/"
-    base_dir = f"./data/topo_nav/{dataset}/"
-    visualization_dir = base_dir + "visualizations/visualized_graphs/"
-    if noise:
-        trajectory_data_dir = base_dir + "noise/trajectory_data/"
-        clustered_graph_dir = base_dir + "noise/clustered_graph/"
+        sim_dir += "gibson_train_val"
+    # base_dir = f"./data/topo_nav/{args.dataset}/"
+    visualization_dir = args.base_dir + "visualizations/visualized_graphs/"
+    if args.noise:
+        trajectory_data_dir = args.base_dir + "noise/trajectory_data/"
+        clustered_graph_dir = args.base_dir + "noise/clustered_graph/"
         print("using noise")
     else:
-        trajectory_data_dir = base_dir + "no_noise/trajectory_data/"
-        clustered_graph_dir = base_dir + "no_noise/clustered_graph/"
+        trajectory_data_dir = args.base_dir + "no_noise/trajectory_data/"
+        clustered_graph_dir = args.base_dir + "no_noise/clustered_graph/"
 
-    passive_scene_file = data_splits + "scenes_passive.txt"
+    passive_scene_file = args.data_splits + "scenes_passive.txt"
     with open(passive_scene_file) as f:
         houseList = sorted([line.rstrip() for line in f])
     for enum, house in enumerate(houseList):

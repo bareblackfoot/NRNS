@@ -17,12 +17,12 @@ from src.utils.cfg import input_paths
 # Training settings
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)
-parser.add_argument("--run_name", type=str, default="goal_mlp")
+parser.add_argument("--run_name", type=str, default="goal_mlp3")
 parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--node_feat_size", type=int, default=512)
 parser.add_argument("--batch_size", type=int, default=100)
 parser.add_argument("--seed", type=int, default=42, help="Random seed.")
-parser.add_argument("--epochs", type=int, default=30)
+parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--dist_max", type=float, default=3.0)
 parser.add_argument("--weight_decay", type=float, default=5e-4)
 parser.add_argument("--early_stopping", type=int, default=20)
@@ -118,10 +118,10 @@ if __name__ == "__main__":
     model = XRN(args)
 
     train_iterator = DataLoader(
-        loader.datasets["train"], batch_size=args.batch_size, shuffle=True
+        loader.datasets["train"], batch_size=args.batch_size, num_workers=4, shuffle=True
     )
     val_iterator = DataLoader(
-        loader.datasets["valUnseen"], batch_size=args.batch_size, shuffle=False
+        loader.datasets["valUnseen"], batch_size=args.batch_size, num_workers=4, shuffle=False
     )
 
     if args.train:
@@ -158,8 +158,8 @@ if __name__ == "__main__":
 
         print("Training Finished!")
         print("Total time elapsed: {:.4f}s".format(time.time() - start_time))
-        print("best model is saved at:", save_path)
 
         print("Running Test Data")
         model.set_model(best_model)
         test_acc = evaluate(model, val_iterator, "test")
+        print("best model is saved at:", save_path)

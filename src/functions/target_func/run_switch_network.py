@@ -1,6 +1,10 @@
 from __future__ import division
 from __future__ import print_function
-
+import sys
+# from os.path import dirname
+# sys.path.append(dirname(__file__))
+# sys.path.append(".")
+sys.path.append("/home/blackfoot/codes/NRNSD")
 import time
 import argparse
 import numpy as np
@@ -9,8 +13,6 @@ import os
 import copy
 
 import torch
-import torch.nn.functional as F
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from src.functions.target_func.switch_data_loader import Loader
@@ -24,19 +26,14 @@ parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--node_feat_size", type=int, default=512)
 parser.add_argument("--batch_size", type=int, default=100)
 parser.add_argument("--seed", type=int, default=42, help="Random seed.")
-parser.add_argument("--epochs", type=int, default=10)
+parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--dist_max", type=float, default=3.0)
-parser.add_argument(
-    "--weight_decay",
-    type=float,
-    default=5e-4,
-    help="Weight decay (L2 loss on parameters).",
-)
+parser.add_argument("--weight_decay", type=float, default=5e-4)
 parser.add_argument("--early_stopping", type=int, default=10)
 args = parser.parse_args()
 args.base_dir += f"{args.dataset}/"
 args.data_splits += f"{args.dataset}/"
-# args.run_name += f"_{args.dataset}"
+args.run_name += f"_{args.dataset}"
 args.trajectory_data_dir = f"{args.base_dir}{args.trajectory_data_dir}"
 
 np.random.seed(args.seed)
@@ -150,10 +147,10 @@ if __name__ == "__main__":
     model = XRN(args)
 
     train_iterator = DataLoader(
-        loader.datasets["train"], batch_size=args.batch_size, shuffle=True
+        loader.datasets["train"], batch_size=args.batch_size, num_workers=4, shuffle=True
     )
     val_iterator = DataLoader(
-        loader.datasets["valUnseen"], batch_size=args.batch_size, shuffle=False
+        loader.datasets["valUnseen"], batch_size=args.batch_size, num_workers=4, shuffle=False
     )
 
     if args.train:
@@ -190,6 +187,8 @@ if __name__ == "__main__":
 
         print("Training Finished!")
         print("Total time elapsed: {:.4f}s".format(time.time() - start_time))
+
+        print("Running Test Data")
         model.set_model(best_model)
         test_acc = evaluate(model, val_iterator, "test")
         print("best model is saved at:", save_path)

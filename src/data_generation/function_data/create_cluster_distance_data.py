@@ -14,17 +14,24 @@ from src.utils.cfg import input_paths
 def get_scenes(scenes, scanName):
     pairs = []
     traj_feats = {}
-    for scene in scenes[1:]:
+    houseFile = clustered_graph_dir + scanName + "_graphs.msg"
+    clusters = msgpack_numpy.unpack(open(houseFile, "rb"), raw=False)
+
+    for scene in clusters:
         """Load trajectory data"""
         # if args.dataset == "mp3d":
-        scan_name = scene.split("_")[0]
+        scan_name = scene["traj_name"].split("_")[0]
+        feats = scene["nodes"]["feat"]
+        states = []
+        for node in scene["nodes"]:
+            states.append((node["pos"], node["rot"]))
         # else:
         #     scan_name = re.match(r"([a-z]+)([0-9]+)", scene, re.I).groups()[0]
-        infoFile = trajectory_data_dir + "trajectoryInfo/" + scene + ".msg"
-        info = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)
-        states = info["states"]
-        featFile = trajectory_data_dir + "trajectoryFeats/" + scene + ".pt"
-        feats = torch.load(featFile).squeeze(-1).squeeze(-1)
+        # infoFile = trajectory_data_dir + "trajectoryInfo/" + scene + ".msg"
+        # info = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)
+        # states = info["states"]
+        # featFile = trajectory_data_dir + "trajectoryFeats/" + scene + ".pt"
+        # feats = torch.load(featFile).squeeze(-1).squeeze(-1)
         try:
             assert len(states) == feats.shape[0]
         except:
@@ -111,12 +118,12 @@ if __name__ == "__main__":
     
     if noise:
         args.base_dir += f"noise/"
-        print("using noise")
     else:
         args.base_dir += f"no_noise/"
 
     trajectory_data_dir = args.base_dir + "trajectory_data/"
-    distance_data_dir = args.base_dir + "distance_data_straight/"
+    clustered_graph_dir = args.base_dir + "clustered_graph/"
+    distance_data_dir = args.base_dir + "clustered_distance_data/"
     trajectory_feats_dir = trajectory_data_dir + "trajectoryFeats/"
     scene_file = args.data_splits + "scenes_passive.txt"
     with open(scene_file) as f:

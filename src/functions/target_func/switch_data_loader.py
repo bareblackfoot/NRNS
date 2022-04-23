@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 import msgpack_numpy
 import math
 from src.utils.sim_utils import get_relative_location
-
+import gzip, json
 
 class Loader:
     def __init__(self, args):
@@ -72,6 +72,7 @@ class Loader:
         print("Loading {} dataset...".format(self.args.dataset))
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        # splitScans = ["Adrian"]
         data = []
         for house in splitScans:
             houseFile = self.args.distance_data_dir + house + "_graph_distance.msg"
@@ -130,22 +131,28 @@ class DistanceDatset(Dataset):
         self.node_poses = node_poses
         self.node_rots = node_rots
         self.rot_diff = rot_diff
+        self.info = {}
+        self.feats = {}
+        for scan_name in np.unique(scans):
+            infoFile = args.trajectory_data_dir + "train_instances/" + scan_name + ".json.gz"
+            with gzip.open(infoFile, "r") as fin:
+                self.info[scan_name] = json.loads(fin.read().decode("utf-8"))
+            featFile = self.args.distance_data_dir + scan_name + "_n_feats.msg"
+            self.feats[scan_name] = msgpack_numpy.unpack(open(featFile, "rb"), raw=False)
 
     def __getitem__(self, index):
         scan_name = self.scans[index]
         trajectory = self.trajs[index]
 
-        featFile = self.args.distance_data_dir + scan_name + "_n_feats.msg"
-        feats = msgpack_numpy.unpack(open(featFile, "rb"), raw=False)
         infoFile = self.args.trajectory_info_dir + trajectory + ".msg"
         states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
 
         switch = torch.tensor(self.switches[index], dtype=torch.float)
         node1 = torch.tensor(
-            feats[trajectory][self.node_feat1[index]], dtype=torch.float
+            self.feats[scan_name][trajectory][self.node_feat1[index]], dtype=torch.float
         )
         node2 = torch.tensor(
-            feats[trajectory][self.node_feat2[index]], dtype=torch.float
+            self.feats[scan_name][trajectory][self.node_feat2[index]], dtype=torch.float
         )
         angle_diff = torch.tensor(self.rot_diff[index], dtype=torch.float)
         angle_encoding = torch.tensor(

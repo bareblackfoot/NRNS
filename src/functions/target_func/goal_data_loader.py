@@ -28,27 +28,27 @@ class Loader:
             for d in trajs:
                 dist_ratio = d["geodesic"] / (d["euclidean"] + 0.00001)
 
-                if (
-                    not (
-                        abs(d["rotation_diff"]) <= 45
-                        and d["geodesic"] <= 1
-                        and d["euclidean"] <= 1
-                        and dist_ratio <= 1.1
-                    )
-                    or not (
-                        abs(d["rotation_diff"]) <= 25
-                        and d["geodesic"] <= 2.25
-                        and d["euclidean"] <= 2.25
-                        and dist_ratio <= 1.01
-                    )
-                    or not (
-                        abs(d["rotation_diff"]) <= 15
-                        and d["geodesic"] <= 3.5
-                        and d["euclidean"] <= 3.5
-                        and dist_ratio <= 1.001
-                    )
-                ):
-                    continue
+                # if (
+                #     not (
+                #         abs(d["rotation_diff"]) <= 45
+                #         and d["geodesic"] <= 1
+                #         and d["euclidean"] <= 1
+                #         and dist_ratio <= 1.1
+                #     )
+                #     or not (
+                #         abs(d["rotation_diff"]) <= 25
+                #         and d["geodesic"] <= 2.25
+                #         and d["euclidean"] <= 2.25
+                #         and dist_ratio <= 1.01
+                #     )
+                #     or not (
+                #         abs(d["rotation_diff"]) <= 15
+                #         and d["geodesic"] <= 3.5
+                #         and d["euclidean"] <= 3.5
+                #         and dist_ratio <= 1.001
+                #     )
+                # ):
+                #     continue
                 trajectory = d["traj"]
 
                 node_feat1.append(feats[trajectory][str(d["n1"])])

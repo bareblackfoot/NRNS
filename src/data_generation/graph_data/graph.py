@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from sklearn.cluster import AffinityPropagation
 
 
 class Node(object):
@@ -149,7 +150,6 @@ def affinity_cluster(G):
         pos = node.pos
         full_feat = np.concatenate((feat, pos), axis=0)
         X.append(full_feat)
-    from sklearn.cluster import AffinityPropagation
 
     clustering = AffinityPropagation(random_state=5).fit(X)
     labels = clustering.labels_

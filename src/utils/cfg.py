@@ -11,8 +11,8 @@ def input_paths(parser):
     parser.add_argument(
         "--dataset",
         type=str,
-        # default="gibson",
-        default="mp3d",
+        default="gibson",
+        # default="mp3d",
     )
     parser.add_argument(
         "--sim_dir",

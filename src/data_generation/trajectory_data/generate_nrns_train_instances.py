@@ -1,3 +1,8 @@
+import sys
+# from os.path import dirname
+# sys.path.append(dirname(__file__))
+# sys.path.append(".")
+sys.path.append("/home/blackfoot/codes/NRNSD")
 import json
 import numpy as np
 from habitat.tasks.nav.shortest_path_follower import ShortestPathFollower
@@ -7,6 +12,7 @@ from typing import List, Union
 from numpy import float64
 import gzip
 import submitit
+import msgpack_numpy
 import sys
 from src.utils.model_utils import load_places_resnet, get_res_feats_batch
 
@@ -14,8 +20,10 @@ try:
     from habitat_sim.errors import GreedyFollowerError
 except ImportError:
     GreedyFollower = BaseException
-from src.utils.sim_utils import set_up_habitat
+from src.utils.sim_utils import set_up_habitat_panoramic
 from habitat.utils.geometry_utils import quaternion_to_list
+import argparse
+from src.utils.cfg import input_paths
 
 PATHS_PER_HOUSE = 1500
 MAX_STEPS = 500
@@ -36,9 +44,9 @@ def get_action_shortest_path(
     sim.reset()
     sim.set_agent_state(source_position, source_rotation)
     obs = sim.get_observations_at(source_position, source_rotation)
-    images = [obs["rgb"]]
+    # images = [obs["rgb"]]
     follower = ShortestPathFollower(sim, success_distance, False)
-
+    images = []
     shortest_path = []
     step_count = 0
     action = follower.get_next_action(goal_position)
@@ -51,11 +59,19 @@ def get_action_shortest_path(
                 action,
             )
         )
-        obs = sim.step(action)
         images.append(obs["rgb"])
+        obs = sim.step(action)
         step_count += 1
         action = follower.get_next_action(goal_position)
-
+    # shortest_path.append(
+    #     ShortestPathPoint(
+    #         state.position.tolist(),
+    #         quaternion_to_list(state.rotation),
+    #         action,
+    #     )
+    # )
+    # images.append(obs["rgb"])
+    state = sim.get_agent_state()
     goal_position = state.position.tolist()
     goal_rotation = quaternion_to_list(state.rotation)
 
@@ -92,7 +108,7 @@ def build_single_path(sim, episode_id):
         if sim.island_radius(source_position) < ISLAND_RADIUS_LIMIT:
             continue
         pointB = get_next_point(source_position, sim)
-        if pointB is None:
+        if pointB[0] is None:
             continue
         pointC = get_next_point(source_position, sim, origin=source_position)
 
@@ -116,7 +132,7 @@ def build_single_path(sim, episode_id):
                 sampled_trajectory.extend(shortest_pathAB)
                 goal_points.append([goal_positionAB, goal_rotationAB])
                 images.extend(imagesAB)
-                if pointC is not None:
+                if pointC[0] is not None:
                     (
                         shortest_pathBC,
                         goal_positionBC,
@@ -141,10 +157,42 @@ def build_single_path(sim, episode_id):
             continue
 
         # Extract Image Features
-        filePath = save_dir + "feats/" + episode_id + ".pt"
+        # filePath = save_dir + "Feats/" + episode_id + ".pt"
+        filePath = save_dir + "trajectoryFeats/" + episode_id + ".pt"
         get_res_feats_batch(filePath, images, RESNET)
 
         source = [source_position, source_rotation]
+        scan_name = episode_id.split("_")[0]
+        # source, sampled_trajectory, goal_points, episode_id = item
+        if args.dataset == "mp3d":
+            scene_id = f"mp3d/{scan_name}/{scan_name}.glb"
+        else:
+            scene_id = f"gibson/{scan_name}.glb"
+
+        poses, rotations, actions = [], [], []
+        for point in sampled_trajectory:
+            poses.append(point.position)
+            rotations.append(point.rotation)
+            actions.append(point.action)
+        episode = {
+            "scene_id": scene_id,
+            "episode_id": episode_id,
+            "start_position": source[0],
+            "start_rotation": source[1],
+            "goals": goal_points,
+            "poses": poses,
+            "rotations": rotations,
+            "actions": actions,
+        }
+        episode_id = episode["episode_id"]
+        episode.update({'states': []})
+        for pose, rot in zip(episode['poses'], episode['rotations']):
+            episode['states'].append((pose, rot))
+        msgpack_numpy.pack(
+            episode,
+            open(save_dir + "trajectoryInfo/" + episode_id + ".msg", "wb"),
+            use_bin_type=True,
+        )
         return source, sampled_trajectory, goal_points
     return None, None, None
 
@@ -168,7 +216,7 @@ def save_data(data, scan_name):
     episode_list = []
     for item in data:
         source, sampled_trajectory, goal_points, episode_id = item
-        if dataset == "mp3d":
+        if args.dataset == "mp3d":
             scene_id = f"mp3d/{scan_name}/{scan_name}.glb"
         else:
             scene_id = f"gibson/{scan_name}.glb"
@@ -188,6 +236,15 @@ def save_data(data, scan_name):
             "rotations": rotations,
             "actions": actions,
         }
+        episode_id = episode["episode_id"]
+        episode.update({'states': []})
+        for pose, rot in zip(episode['poses'], episode['rotations']):
+            episode['states'].append((pose, rot))
+        msgpack_numpy.pack(
+            episode,
+            open(save_dir + episode_id + ".msg", "wb"),
+            use_bin_type=True,
+        )
         episode_list.append(episode)
     print(save_dir + scan_name + ".json.gz")
     with gzip.open(save_dir + scan_name + ".json.gz", "wt") as f:
@@ -198,58 +255,77 @@ def save_data(data, scan_name):
 def generate_trajectories(house):
     # generate paths
     episodes = []
-    if dataset == "mp3d":
+    if args.dataset == "mp3d":
         scene = "{}{}/{}.glb".format(sim_dir, house, house)
-        sim, _ = set_up_habitat(scene)
+        sim, _ = set_up_habitat_panoramic(scene)
         episodes = gather_paths_per_house(house, sim)
     else:
         scene = "{}/{}.glb".format(sim_dir, house)
-        sim, _ = set_up_habitat(scene)
+        sim, _ = set_up_habitat_panoramic(scene)
         episodes = gather_paths_per_house(house, sim)
     sim.close()
     save_data(episodes, house)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        raise Exception("missing dataset argument-- Options: 'gibson' or 'mp3d'")
-    print("dataset", sys.argv[1])
-    dataset = sys.argv[1]
-    sim_dir = "/srv/datasets/habitat-sim-datasets/"
-    if dataset == "mp3d":
+    parser = argparse.ArgumentParser()
+    parser = input_paths(parser)
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=0,
+    )
+    args = parser.parse_args()
+    # if len(sys.argv) == 1:
+    #     raise Exception("missing dataset argument-- Options: 'gibson' or 'mp3d'")
+    # print("dataset", sys.argv[1])
+    # dataset = sys.argv[1]
+    sim_dir = "./data/scene_datasets/"
+    if args.dataset == "mp3d":
         sim_dir += "mp3d/"
     else:
         sim_dir += "gibson_train_val"
-    base_dir = f"/srv/flash1/userid/topo_nav/{dataset}/"
-    save_dir = base_dir + "trajectory_data/train_instances/"
-    data_splits = f"data_splits/{dataset}/"
-    scan_levels = json.load(open(data_splits + f"{dataset}_scan_levels.json"))
-    train_scene_file = data_splits + "scenes_passive.txt"
-    with open(train_scene_file) as f:
-        train_scenes = sorted([line.rstrip() for line in f])
+    # base_dir = f"./topo_nav/{args.dataset}/"
+    args.base_dir += f"{args.dataset}/no_noise/"
+    save_dir = args.base_dir + "trajectory_data/"
+    # data_splits = f"data_splits/{args.dataset}/"
+    args.data_splits += f"{args.dataset}/"
+    scan_levels = json.load(open(args.data_splits + f"{args.dataset}_scan_levels.json"))
+    scene_file = args.data_splits + "scenes_passive.txt"
+    with open(scene_file) as f:
+        scenes = sorted([line.rstrip() for line in f])
+    num_scene = 3
+    scenes = scenes[num_scene*args.n:num_scene*(args.n+1)]
+    # train_scenes = train_scenes[15:30]
+    # train_scenes = train_scenes[30:40]
+    # train_scenes = train_scenes[40:50]
+    # train_scenes = train_scenes[50:60]
+    # train_scenes = train_scenes[-1:]
+    for house in scenes:
+        generate_trajectories(house)
 
-    submitit_log_dir = "/srv/flash1/userid/submitit/log_test"
-    executor = submitit.AutoExecutor(folder=submitit_log_dir)
-    executor.update_parameters(
-        slurm_gres="gpu:1",
-        slurm_cpus_per_task=6,
-        slurm_time=24 * 60,
-        slurm_partition="short",
-        slurm_array_parallelism=30,
-    )
-
-    jobs = []
-
-    with executor.batch():
-        for house in train_scenes:
-            print("current house:", house)
-            jobs.append(
-                executor.submit(
-                    generate_trajectories,
-                    house,
-                )
-            )
-
-    print("jobs started", len(jobs))
-    for job in jobs:
-        print(job.results())
+    # submitit_log_dir = "/srv/flash1/userid/submitit/log_test"
+    # executor = submitit.AutoExecutor(folder=submitit_log_dir)
+    # executor.update_parameters(
+    #     slurm_gres="gpu:1",
+    #     slurm_cpus_per_task=6,
+    #     slurm_time=24 * 60,
+    #     slurm_partition="short",
+    #     slurm_array_parallelism=30,
+    # )
+    #
+    # jobs = []
+    #
+    # with executor.batch():
+    #     for house in train_scenes:
+    #         print("current house:", house)
+    #         jobs.append(
+    #             executor.submit(
+    #                 generate_trajectories,
+    #                 house,
+    #             )
+    #         )
+    #
+    # print("jobs started", len(jobs))
+    # for job in jobs:
+    #     print(job.results())
