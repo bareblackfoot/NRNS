@@ -81,15 +81,6 @@ def train(model, train_iterator):
         train_err.append(dist_err)
         train_acc.append(dist_acc)
         train_acctopk.append(topk_acc)
-        #
-        # print(
-        #     "Epoch: {:02d}".format(epoch + 1),
-        #     "--Train:",
-        #     "train_loss: {:.4f}".format(np.mean(train_loss)),
-        #     "train_dist_err: {:.4f}".format(np.mean(train_err)),
-        #     "train_dist_acc: {:.4f}".format(np.mean(train_acc)),
-        #     "train_topk_acc: {:.4f}".format(np.mean(train_acctopk)),
-        # )
 
     mode = "Train"
     writer.add_scalar("Loss/" + mode, np.mean(loss), epoch)
