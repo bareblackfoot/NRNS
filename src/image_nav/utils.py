@@ -37,7 +37,7 @@ def load_models(args):
     else:
         from src.functions.bc_func.bc_gru_network import ActionNetwork
     model_action = ActionNetwork()
-    model_action.load_state_dict(torch.load(args.model_dir + args.bc_model_path))
+    # model_action.load_state_dict(torch.load(args.model_dir + args.bc_model_path))
     model_action.to(args.device)
     model_action.eval()
 

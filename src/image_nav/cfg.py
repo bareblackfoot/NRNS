@@ -37,7 +37,7 @@ parser.add_argument("--sim_dir", type=str, default="data/scene_datasets/")
 parser.add_argument("--floorplan_dir", type=str, default="data/mp3d_floorplans/")
 
 # Models
-parser.add_argument("--model_dir", type=str, default="pano_models/")
+parser.add_argument("--model_dir", type=str, default="models/")
 parser.add_argument(
     "--distance_model_path",
     type=str,
@@ -69,6 +69,9 @@ parser.add_argument(
 
 def parse_args():
     args = parser.parse_args()
+    if args.panoramic:
+        args.model_dir += args.model_dir.replace("models", "pano_models")
+
     args.base_dir += f"{args.dataset}/"
     args.test_dir = f"{args.base_dir}image_nav_episodes/"
 

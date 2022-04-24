@@ -20,7 +20,7 @@ try:
     from habitat_sim.errors import GreedyFollowerError
 except ImportError:
     GreedyFollower = BaseException
-from src.utils.sim_utils import set_up_habitat_panoramic
+from src.utils.sim_utils import set_up_habitat_panoramic, set_up_habitat
 from habitat.utils.geometry_utils import quaternion_to_list
 import argparse
 from src.utils.cfg import input_paths
@@ -257,11 +257,17 @@ def generate_trajectories(house):
     episodes = []
     if args.dataset == "mp3d":
         scene = "{}{}/{}.glb".format(sim_dir, house, house)
-        sim, _ = set_up_habitat_panoramic(scene)
+        if args.panoramic:
+            sim, _ = set_up_habitat_panoramic(scene)
+        else:
+            sim, _ = set_up_habitat(scene)
         episodes = gather_paths_per_house(house, sim)
     else:
         scene = "{}/{}.glb".format(sim_dir, house)
-        sim, _ = set_up_habitat_panoramic(scene)
+        if args.panoramic:
+            sim, _ = set_up_habitat_panoramic(scene)
+        else:
+            sim, _ = set_up_habitat(scene)
         episodes = gather_paths_per_house(house, sim)
     sim.close()
     save_data(episodes, house)
@@ -276,6 +282,8 @@ if __name__ == "__main__":
         default=0,
     )
     args = parser.parse_args()
+    if args.panoramic:
+        args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
     # if len(sys.argv) == 1:
     #     raise Exception("missing dataset argument-- Options: 'gibson' or 'mp3d'")
     # print("dataset", sys.argv[1])

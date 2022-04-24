@@ -116,6 +116,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser = input_paths(parser)
     args = parser.parse_args()
+    if args.panoramic:
+        args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
     args.base_dir += f"{args.dataset}/"
     args.data_splits += f"{args.dataset}/"
     args.trajectory_data_dir = f"{args.base_dir}{args.trajectory_data_dir}"

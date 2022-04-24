@@ -30,6 +30,8 @@ parser.add_argument(
 )
 parser.add_argument("--early_stopping", type=int, default=20)
 args = parser.parse_args()
+if args.panoramic:
+    args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
 args.base_dir += f"{args.dataset}/"
 args.data_splits += f"{args.dataset}/"
 args.run_name += f"_{args.bc_model_type}_{args.dataset}"

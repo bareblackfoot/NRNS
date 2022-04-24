@@ -53,6 +53,11 @@ class TopoGCN(nn.Module):
     """v2: graph conv layers"""
     def forward(self, data):
         # num_nodes = data.x.size()[0]
+        if 'batch' in data:
+            for v in data:
+                if "cuda" in str(v[1].device):
+                    data[str(v[0])] = v[1].cpu()
+        num_nodes = data.x.size()[0]
         x = F.relu(self.conv1(data.x, data.edge_index, data.edge_attr))
         x = F.dropout(x, training=self.training)
         x = F.relu(self.conv2(x, data.edge_index, data.edge_attr))
@@ -60,13 +65,14 @@ class TopoGCN(nn.Module):
         x = F.relu(self.conv3(x, data.edge_index))
         x = F.dropout(x, training=self.training)
         x = F.relu(self.conv4(x, data.edge_index))
-        # print(x.shape)
-        # print(data.goal_feat.shape)
-        # print(num_nodes)
-        # print(data.goal_feat.repeat(num_nodes, 1).shape)
-        pred_dist = self.distance_layers(
-            torch.cat((x, data.goal_feat[data.batch]), dim=1)
-        )
+        if 'batch' in data:
+            pred_dist = self.distance_layers(
+                torch.cat((x, data.goal_feat[data.batch]), dim=1)
+            )
+        else:
+            pred_dist = self.distance_layers(
+                torch.cat((x, data.goal_feat.repeat(num_nodes, 1)), dim=1)
+            )
 
         return pred_dist
 
@@ -74,11 +80,12 @@ class TopoGCN(nn.Module):
 class XRN(object):
     def __init__(self, opt):
         self.dist_criterion = torch.nn.MSELoss()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu"# torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = TopoGCN()
-        if torch.cuda.device_count() > 1:
-            print("Let's use", torch.cuda.device_count(), "GPUs!")
-            self.model = nn.DataParallel(self.model)
+        self.model = DataParallel(self.model)
+        # if torch.cuda.device_count() > 1:
+        #     print("Let's use", torch.cuda.device_count(), "GPUs!")
+        #     self.model = nn.DataParallel(self.model)
         self.model = self.model.to(self.device)
         self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(

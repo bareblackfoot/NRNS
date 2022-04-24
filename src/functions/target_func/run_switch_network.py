@@ -31,6 +31,8 @@ parser.add_argument("--dist_max", type=float, default=3.0)
 parser.add_argument("--weight_decay", type=float, default=5e-4)
 parser.add_argument("--early_stopping", type=int, default=10)
 args = parser.parse_args()
+if args.panoramic:
+    args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
 args.base_dir += f"{args.dataset}/"
 args.data_splits += f"{args.dataset}/"
 args.run_name += f"_{args.dataset}"

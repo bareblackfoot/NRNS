@@ -54,7 +54,7 @@ def input_paths(parser):
     parser.add_argument(
         "--saved_model_dir",
         type=str,
-        default="pano_models/",
+        default="models/",
     )
     parser.add_argument(
         "--submitit_log_dir",
@@ -65,6 +65,11 @@ def input_paths(parser):
         "--summary_dir",
         type=str,
         default="logs/tensorboard/",
+    )
+    parser.add_argument(
+        "--panoramic",
+        default=False,
+        action="store_true"
     )
 
     return parser

@@ -26,6 +26,8 @@ parser.add_argument("--epochs", type=int, default=30)
 parser.add_argument("--weight_decay", type=float, default=5e-4)
 parser.add_argument("--early_stopping", type=int, default=15)
 args = parser.parse_args()
+if args.panoramic:
+    args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
 args.base_dir += f"{args.dataset}/"
 args.data_splits += f"{args.dataset}/"
 args.run_name += f"_{args.dataset}"
@@ -100,10 +102,10 @@ if __name__ == "__main__":
     # Load data
     loader = load_data()
     train_iterator = DataListLoader(
-        loader.datasets["train"], batch_size=args.batch_size, shuffle=True
+        loader.datasets["train"], batch_size=args.batch_size, num_workers=4, shuffle=True
     )
     val_iterator = DataListLoader(
-        loader.datasets["valUnseen"], batch_size=args.batch_size, shuffle=True
+        loader.datasets["valUnseen"], batch_size=args.batch_size, num_workers=4, shuffle=False
     )
 
     # Create Model
@@ -119,10 +121,10 @@ if __name__ == "__main__":
     start_time = time.time()
 
     for epoch in range(args.epochs):
-        # train(model, train_iterator)
-        # val_acc = evaluate(model, val_iterator)
+        train(model, train_iterator)
+        val_acc = evaluate(model, val_iterator)
         model.my_lr_scheduler.step()
-        val_acc = 0.
+        # val_acc = 0.
         best_model = model.get_model()
         save_path = os.path.join(
             args.saved_model_dir + "feat_pred/",

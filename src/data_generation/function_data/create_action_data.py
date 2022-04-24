@@ -9,7 +9,9 @@ from src.utils.cfg import input_paths
 """V1: Gets the data to train Behavioral Cloning from the trajectories"""
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)   
-args = parser.parse_args() 
+args = parser.parse_args()
+if args.panoramic:
+    args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
 args.base_dir += f"{args.dataset}/no_noise/"
 args.data_splits += f"{args.dataset}/"
 
