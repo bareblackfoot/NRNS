@@ -27,7 +27,7 @@ parser.add_argument("--weight_decay", type=float, default=5e-4)
 parser.add_argument("--early_stopping", type=int, default=15)
 args = parser.parse_args()
 if args.panoramic:
-    args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
+    args.saved_model_dir = args.saved_model_dir.replace("models", "pano_models")
 args.base_dir += f"{args.dataset}/"
 args.data_splits += f"{args.dataset}/"
 args.run_name += f"_{args.dataset}"
@@ -81,6 +81,16 @@ def train(model, train_iterator):
         train_err.append(dist_err)
         train_acc.append(dist_acc)
         train_acctopk.append(topk_acc)
+        #
+        # print(
+        #     "Epoch: {:02d}".format(epoch + 1),
+        #     "--Train:",
+        #     "train_loss: {:.4f}".format(np.mean(train_loss)),
+        #     "train_dist_err: {:.4f}".format(np.mean(train_err)),
+        #     "train_dist_acc: {:.4f}".format(np.mean(train_acc)),
+        #     "train_topk_acc: {:.4f}".format(np.mean(train_acctopk)),
+        # )
+
     mode = "Train"
     writer.add_scalar("Loss/" + mode, np.mean(loss), epoch)
     writer.add_scalar("Error/" + mode, np.mean(train_err), epoch)
@@ -121,10 +131,10 @@ if __name__ == "__main__":
     start_time = time.time()
 
     for epoch in range(args.epochs):
-        train(model, train_iterator)
-        val_acc = evaluate(model, val_iterator)
+        # train(model, train_iterator)
+        # val_acc = evaluate(model, val_iterator)
         model.my_lr_scheduler.step()
-        # val_acc = 0.
+        val_acc = 0.
         best_model = model.get_model()
         save_path = os.path.join(
             args.saved_model_dir + "feat_pred/",

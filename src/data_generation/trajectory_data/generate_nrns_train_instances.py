@@ -283,7 +283,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.panoramic:
-        args.saved_model_dir += args.saved_model_dir.replace("models", "pano_models")
+        args.saved_model_dir = args.saved_model_dir.replace("models", "pano_models")
     # if len(sys.argv) == 1:
     #     raise Exception("missing dataset argument-- Options: 'gibson' or 'mp3d'")
     # print("dataset", sys.argv[1])
