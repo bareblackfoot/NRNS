@@ -52,7 +52,7 @@ class TopoGCN(nn.Module):
 
     """v2: graph conv layers"""
     def forward(self, data):
-        num_nodes = data.x.size()[0]
+        # num_nodes = data.x.size()[0]
         x = F.relu(self.conv1(data.x, data.edge_index, data.edge_attr))
         x = F.dropout(x, training=self.training)
         x = F.relu(self.conv2(x, data.edge_index, data.edge_attr))
@@ -76,7 +76,9 @@ class XRN(object):
         self.dist_criterion = torch.nn.MSELoss()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = TopoGCN()
-        self.model = DataParallel(self.model)
+        if torch.cuda.device_count() > 1:
+            print("Let's use", torch.cuda.device_count(), "GPUs!")
+            self.model = nn.DataParallel(self.model)
         self.model = self.model.to(self.device)
         self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(

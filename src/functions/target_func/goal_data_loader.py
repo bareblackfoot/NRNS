@@ -28,50 +28,50 @@ class Loader:
             for d in trajs:
                 dist_ratio = d["geodesic"] / (d["euclidean"] + 0.00001)
 
-                # if (
-                #     not (
-                #         abs(d["rotation_diff"]) <= 45
-                #         and d["geodesic"] <= 1
-                #         and d["euclidean"] <= 1
-                #         and dist_ratio <= 1.1
-                #     )
-                #     or not (
-                #         abs(d["rotation_diff"]) <= 25
-                #         and d["geodesic"] <= 2.25
-                #         and d["euclidean"] <= 2.25
-                #         and dist_ratio <= 1.01
-                #     )
-                #     or not (
-                #         abs(d["rotation_diff"]) <= 15
-                #         and d["geodesic"] <= 3.5
-                #         and d["euclidean"] <= 3.5
-                #         and dist_ratio <= 1.001
-                #     )
-                # ):
-                #     continue
-                trajectory = d["traj"]
+                if (
+                    (
+                        abs(d["rotation_diff"]) <= 60
+                        and d["geodesic"] <= 1
+                        and d["euclidean"] <= 1
+                        and dist_ratio <= 1.1
+                    )
+                    or (
+                        abs(d["rotation_diff"]) <= 45
+                        and d["geodesic"] <= 2.25
+                        and d["euclidean"] <= 2.25
+                        and dist_ratio <= 1.01
+                    )
+                    or (
+                        abs(d["rotation_diff"]) <= 25
+                        and d["geodesic"] <= 3.5
+                        and d["euclidean"] <= 3.5
+                        and dist_ratio <= 1.001
+                    )
+                ):
+                    # continue
+                    trajectory = d["traj"]
 
-                node_feat1.append(feats[trajectory][str(d["n1"])])
-                node_feat2.append(feats[trajectory][str(d["n2"])])
+                    node_feat1.append(feats[trajectory][str(d["n1"])])
+                    node_feat2.append(feats[trajectory][str(d["n2"])])
 
-                infoFile = trajectory_info_dir + trajectory + ".msg"
-                states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
-                start_pos = states[d["n1"]][0]
-                start_rot = states[d["n1"]][1]
-                goal_pos = states[d["n2"]][0]
-                rho, phi = get_relative_location(start_pos, start_rot, goal_pos)
+                    infoFile = trajectory_info_dir + trajectory + ".msg"
+                    states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
+                    start_pos = states[d["n1"]][0]
+                    start_rot = states[d["n1"]][1]
+                    goal_pos = states[d["n2"]][0]
+                    rho, phi = get_relative_location(start_pos, start_rot, goal_pos)
 
-                infos.append(
-                    [
-                        d["scan_name"],
-                        d["traj"],
-                        phi,
-                        rho,
-                        start_pos,
-                        start_rot,
-                        goal_pos,
-                    ]
-                )
+                    infos.append(
+                        [
+                            d["scan_name"],
+                            d["traj"],
+                            phi,
+                            rho,
+                            start_pos,
+                            start_rot,
+                            goal_pos,
+                        ]
+                    )
 
         return (
             node_feat1,
@@ -82,6 +82,7 @@ class Loader:
     def build_dataset(self, split):
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        # splitScans = ['Adrian']
         node_feat1, node_feat2, infos = self.load_examples(splitScans)
         print("[{}]: Using {} houses".format(split, len(splitScans)))
         dataset = DistanceDatset(self.args, node_feat1, node_feat2, infos)
@@ -115,9 +116,9 @@ class DistanceDatset(Dataset):
             dtype=torch.float,
         )
 
-        geo_dist = self.infos[index][3]
+        geo_dist = self.infos[index][3] #rho
         dist_score = geo_dist
-        # torch.tensor(
+        # dist_score = torch.tensor(
         #     1 - min(geo_dist, self.args.dist_max) / self.args.dist_max,
         #     dtype=torch.float,
         # )
@@ -138,3 +139,10 @@ class DistanceDatset(Dataset):
 
     def __len__(self):
         return len(self.infos)
+        # d["scan_name"],
+        # d["traj"],
+        # phi,
+        # rho,
+        # start_pos,
+        # start_rot,
+        # goal_pos,

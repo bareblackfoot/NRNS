@@ -119,16 +119,16 @@ if __name__ == "__main__":
     start_time = time.time()
 
     for epoch in range(args.epochs):
-        train(model, train_iterator)
-        val_acc = evaluate(model, val_iterator)
+        # train(model, train_iterator)
+        # val_acc = evaluate(model, val_iterator)
         model.my_lr_scheduler.step()
-
+        val_acc = 0.
         best_model = model.get_model()
         save_path = os.path.join(
             args.saved_model_dir + "feat_pred/",
             args.run_name + "_unseenAcc{:.2f}_epoch{}.pt".format(val_acc, epoch),
         )
-        torch.save(best_model, save_path)
+        torch.save(best_model.state_dict(), save_path)
         print("Saved model at:", str(save_path))
 
         if val_acc > best_val_acc:

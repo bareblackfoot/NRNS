@@ -12,7 +12,7 @@ class GoalMLP(torch.nn.Module):
         super(GoalMLP, self).__init__()
         self.f1 = nn.Sequential(nn.Linear(512, 512), nn.ReLU(True))
         self.regression = nn.Sequential(
-            nn.Linear(512, 512), nn.ReLU(True), nn.Linear(512, 256), nn.ReLU(True)
+            nn.Linear(512, 512), nn.ReLU(), nn.Linear(512, 256), nn.ReLU()
         )
         self.dist_predict = torch.nn.Linear(256, 1)
         self.rot_predict = torch.nn.Linear(256, 1)
@@ -43,7 +43,7 @@ class XRN(object):
             print("Let's use", torch.cuda.device_count(), "GPUs!")
             self.model = nn.DataParallel(self.model)
         self.model.to(self.device)
-        self.learning_rate = 0.0005
+        self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4
         )
@@ -94,7 +94,7 @@ class XRN(object):
             )
             final_pos = stateB[0:3, 3]
             goal_err.append(np.linalg.norm(goal_pos - final_pos))
-        return np.mean(goal_err)
+        return goal_err
 
     def eval_emb(
         self,
@@ -169,14 +169,18 @@ class XRN(object):
 
         # losses
         dist_output = dist_output.squeeze(1)
+        with torch.no_grad():
+            dist_score_no_grad = dist_score.float().to(self.device)
+            true_phi_no_grad = true_phi.float().to(self.device)
+
         dist_loss = self.dist_criterion(
             dist_output.float(),
-            dist_score.to(self.device).float(),
+            dist_score_no_grad,
         )
         rot_output = rot_output.squeeze(1)
         rot_loss = self.rot_criterion(
             rot_output,
-            true_phi.to(self.device),
+            true_phi_no_grad,
         )
         losses = [dist_loss.item(), rot_loss.item()]
         loss = dist_loss + rot_loss

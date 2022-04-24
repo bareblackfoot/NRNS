@@ -17,10 +17,10 @@ from src.utils.cfg import input_paths
 # Training settings
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)
-parser.add_argument("--run_name", type=str, default="goal_mlp3")
+parser.add_argument("--run_name", type=str, default="goal_mlp4")
 parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--node_feat_size", type=int, default=512)
-parser.add_argument("--batch_size", type=int, default=100)
+parser.add_argument("--batch_size", type=int, default=30)
 parser.add_argument("--seed", type=int, default=42, help="Random seed.")
 parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--dist_max", type=float, default=3.0)
@@ -57,7 +57,7 @@ def train(model, train_iterator):
         dist_err.append(location_err)
         dist_loss.append(losses[0])
         rot_loss.append(losses[1])
-
+    dist_err = np.concatenate(dist_err)
     train_acc = (np.asarray(dist_err) <= 0.1).sum() * 1.0 / len(dist_err)
 
     print(
@@ -77,7 +77,6 @@ def train(model, train_iterator):
 def evaluate(model, data_iterator, split):
     with torch.no_grad():
         eval_loss = []
-        eval_acc = []
         dist_err = []
         outputs = [[], []]
 
@@ -88,6 +87,7 @@ def evaluate(model, data_iterator, split):
             outputs[0].extend(dist_output)
             outputs[1].extend(rot_output)
 
+    dist_err = np.concatenate(dist_err)
     eval_acc = (np.asarray(dist_err) <= 0.1).sum() * 1.0 / len(dist_err)
     print(
         "Epoch: {:02d}".format(epoch + 1),
