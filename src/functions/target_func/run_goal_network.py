@@ -17,7 +17,7 @@ from src.utils.cfg import input_paths
 # Training settings
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)
-parser.add_argument("--run_name", type=str, default="goal_mlp5")
+parser.add_argument("--run_name", type=str, default="goal_mlp")
 parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--node_feat_size", type=int, default=512)
 parser.add_argument("--batch_size", type=int, default=30)
@@ -25,7 +25,7 @@ parser.add_argument("--seed", type=int, default=42, help="Random seed.")
 parser.add_argument("--epochs", type=int, default=100)
 parser.add_argument("--dist_max", type=float, default=3.0)
 parser.add_argument("--weight_decay", type=float, default=5e-4)
-parser.add_argument("--early_stopping", type=int, default=20)
+parser.add_argument("--early_stopping", type=int, default=30)
 args = parser.parse_args()
 if args.panoramic:
     args.saved_model_dir = args.saved_model_dir.replace("models", "pano_models")

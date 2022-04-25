@@ -2,6 +2,8 @@ import numpy as np
 import msgpack_numpy
 import torch
 from torch_geometric.data import Data
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 class Loader:
@@ -152,6 +154,7 @@ class Loader:
     def build_dataset(self, split):
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
+        # splitScans  = ['Adrian']
         data = []
         for house in splitScans:
             houseFile = self.args.clustered_graph_dir + house + "_graphs.msg"

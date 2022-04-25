@@ -18,7 +18,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 # Training settings
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)
-parser.add_argument("--run_name", type=str, default="CGConv")
+parser.add_argument("--run_name", type=str, default="CGConv2")
 parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--test", action="store_true", default=True)
 parser.add_argument("--dropout", type=float, default=0.5)
@@ -95,10 +95,10 @@ if __name__ == "__main__":
     # Load data
     loader = load_data()
     train_iterator = DataListLoader(
-        loader.datasets["train"], batch_size=args.batch_size, num_workers=4, shuffle=True
+        loader.datasets["train"], batch_size=args.batch_size, num_workers=0, pin_memory=True, shuffle=True
     )
     val_iterator = DataListLoader(
-        loader.datasets["valUnseen"], batch_size=args.batch_size, num_workers=4, shuffle=False
+        loader.datasets["valUnseen"], batch_size=args.batch_size, num_workers=0, pin_memory=True, shuffle=False
     )
 
     # Create Model
