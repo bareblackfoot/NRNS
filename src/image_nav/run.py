@@ -67,7 +67,10 @@ def main(args):
     with gzip.open(jsonfilename, "r") as fin:
         data = json.loads(fin.read().decode("utf-8"))["episodes"]
     """Loop over test episodes"""
-    for instance in tqdm.tqdm(data):
+    # for instance in tqdm.tqdm(data):
+    cnt = 0
+    with tqdm(total=len(data)) as pbar:
+        instance = data[cnt]
         scan_name = instance["scene_id"].split("/")[-1].split(".")[0]
         episode_id = instance["episode_id"]
         length_shortest = instance["length_shortest"]
@@ -131,6 +134,9 @@ def main(args):
                 visualizer.create_layout_mp3d(episode_id)
             else:
                 visualizer.create_layout(agent, episode_id)
+        pbar.update(1)
+        pbar.set_description('%03d/%03d Success %.3f' % (cnt, len(data), np.mean(rates["success"])))
+        cnt += 1
 
     """Print Stats"""
     print("\nType of Run: ")
