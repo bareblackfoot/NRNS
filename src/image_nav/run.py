@@ -69,7 +69,7 @@ def main(args):
     """Loop over test episodes"""
     # for instance in tqdm.tqdm(data):
     cnt = 0
-    with tqdm(total=len(data)) as pbar:
+    with tqdm.tqdm(total=len(data)) as pbar:
         instance = data[cnt]
         scan_name = instance["scene_id"].split("/")[-1].split(".")[0]
         episode_id = instance["episode_id"]
