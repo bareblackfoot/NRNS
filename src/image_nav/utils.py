@@ -55,16 +55,20 @@ def load_models(args):
 
     """Load Distance function"""
     model_feat_pred = TopoGCN()
-    pretrained_state = torch.load(args.model_dir + args.distance_model_path)
-    prefix = "module."
-    model_feat_pred.load_state_dict(
-        {
-            k[len(prefix) :]: v
-            for k, v in pretrained_state.items()
-            if k.startswith(prefix)
-        }
-    )
-    model_feat_pred = DataParallel(model_feat_pred)
+    if args.panoramic:
+        pretrained_state = torch.load(args.model_dir + args.distance_model_path)
+        prefix = "module."
+        model_feat_pred.load_state_dict(
+            {
+                k[len(prefix) :]: v
+                for k, v in pretrained_state.items()
+                if k.startswith(prefix)
+            }
+        )
+        model_feat_pred = DataParallel(model_feat_pred)
+    else:
+        model_feat_pred = torch.load(args.model_dir + args.distance_model_path)
+        print(sum(p.numel() for p in model_feat_pred.parameters()))
 
     model_feat_pred.to(args.device)
     model_feat_pred.eval()
