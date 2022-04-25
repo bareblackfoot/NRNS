@@ -35,7 +35,7 @@ def load_models(args):
     else:
         from src.functions.bc_func.bc_gru_network import ActionNetwork
     model_action = ActionNetwork()
-    model_action.load_state_dict(torch.load(args.model_dir + args.bc_model_path))
+    # model_action.load_state_dict(torch.load(args.model_dir + args.bc_model_path))
     model_action.to(args.device)
     model_action.eval()
 
@@ -57,8 +57,17 @@ def load_models(args):
     # model_feat_pred.load_state_dict(torch.load(args.model_dir + args.distance_model_path))#.module
     # model_goal.to(args.device)
     model_feat_pred = TopoGCN()
-    model_feat_pred = torch.load(args.model_dir + args.distance_model_path)#.module
-    print(sum(p.numel() for p in model_feat_pred.parameters()))
+    # model_feat_pred = torch.load(args.model_dir + args.distance_model_path)#.module
+    # print(sum(p.numel() for p in model_feat_pred.parameters()))
+    pretrained_state = torch.load(args.model_dir + args.distance_model_path)
+    prefix = "module."
+    model_feat_pred.load_state_dict(
+        {
+            k[len(prefix) :]: v
+            for k, v in pretrained_state.items()
+            if k.startswith(prefix)
+        }
+    )
 
     model_feat_pred.to(args.device)
     model_feat_pred.eval()

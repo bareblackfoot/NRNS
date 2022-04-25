@@ -69,6 +69,8 @@ parser.add_argument(
 
 def parse_args():
     args = parser.parse_args()
+    if args.panoramic:
+        args.model_dir = args.model_dir.replace("models", "pano_models")
     args.base_dir += f"{args.dataset}/"
     args.test_dir = f"{args.base_dir}image_nav_episodes/"
 
