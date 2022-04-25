@@ -57,17 +57,13 @@ def evaluate(model, train_iterator):
         eval_err.append(dist_err)
         eval_acc.append(dist_acc)
         eval_acctopk.append(topk_acc)
-    mode = "Val"
-    writer.add_scalar("Loss/" + mode, np.mean(eval_loss), epoch)
-    writer.add_scalar("Error/" + mode, np.mean(eval_err), epoch)
-    writer.add_scalar("DistAcc/" + mode, np.mean(eval_acc), epoch)
-    writer.add_scalar("TopKAcc/" + mode, np.mean(eval_acctopk), epoch)
+    eval_err = np.concatenate(eval_err)
     print(
         "Epoch: {:02d}".format(epoch + 1),
         "--Eval:",
         "eval_loss: {:.4f}".format(np.mean(eval_loss)),
         "eval_dist_err: {:.4f}".format(np.mean(eval_err)),
-        "eval_dist_acc: {:.4f}".format(np.mean(eval_acc)),
+        "eval_dist_acc: {:.4f}".format(np.mean(np.where(np.asarray(eval_err) <= 0.1, 1, 0))),
         "eval_topk_acc: {:.4f}".format(np.mean(eval_acctopk)),
     )
 
@@ -84,18 +80,12 @@ def train(model, train_iterator):
         train_acc.append(dist_acc)
         train_acctopk.append(topk_acc)
     train_err = np.concatenate(train_err)
-    mode = "Train" #np.mean(np.where(np.asarray(error) <= 0.1, 1, 0))
-    writer.add_scalar("Loss/" + mode, np.mean(loss), epoch)
-    writer.add_scalar("Error/" + mode, np.mean(train_err), epoch)
-    writer.add_scalar("DistAcc/" + mode, np.mean(np.where(np.asarray(train_err) <= 0.1, 1, 0)), epoch)
-    writer.add_scalar("TopKAcc/" + mode, np.mean(train_acctopk), epoch)
-
     print(
         "Epoch: {:02d}".format(epoch + 1),
         "--Train:",
         "train_loss: {:.4f}".format(np.mean(train_loss)),
         "train_dist_err: {:.4f}".format(np.mean(train_err)),
-        "train_dist_acc: {:.4f}".format(np.mean(train_acc)),
+        "train_dist_acc: {:.4f}".format(np.mean(np.where(np.asarray(train_err) <= 0.1, 1, 0))),
         "train_topk_acc: {:.4f}".format(np.mean(train_acctopk)),
     )
 
@@ -149,12 +139,8 @@ if __name__ == "__main__":
     print("Training Finished!")
     print("Total time elapsed: {:.4f}s".format(time.time() - start_time))
 
-    test_iterator = DataListLoader(
-        loader.datasets["valUnseen"], batch_size=args.batch_size, shuffle=True
-    )
-
     # Evaluate Best Model
     model.set_model(best_model)
     model.eval_start()
-    test_acc = evaluate(model, test_iterator)
+    test_acc = evaluate(model, val_iterator)
     print("Testing Finished!")

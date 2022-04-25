@@ -83,9 +83,6 @@ class XRN(object):
         self.device = "cpu"# torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = TopoGCN()
         self.model = DataParallel(self.model)
-        # if torch.cuda.device_count() > 1:
-        #     print("Let's use", torch.cuda.device_count(), "GPUs!")
-        #     self.model = nn.DataParallel(self.model)
         self.model = self.model.to(self.device)
         self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(
