@@ -12,6 +12,8 @@ from torch_geometric.data import DataListLoader
 from src.functions.feat_pred_fuc.deepgcn import XRN
 from src.functions.feat_pred_fuc.batch_traj_loader import Loader
 from src.utils.cfg import input_paths
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 # Training settings
 parser = argparse.ArgumentParser()
@@ -81,11 +83,11 @@ def train(model, train_iterator):
         train_err.append(dist_err)
         train_acc.append(dist_acc)
         train_acctopk.append(topk_acc)
-
-    mode = "Train"
+    train_err = np.concatenate(train_err)
+    mode = "Train" #np.mean(np.where(np.asarray(error) <= 0.1, 1, 0))
     writer.add_scalar("Loss/" + mode, np.mean(loss), epoch)
     writer.add_scalar("Error/" + mode, np.mean(train_err), epoch)
-    writer.add_scalar("DistAcc/" + mode, np.mean(train_acc), epoch)
+    writer.add_scalar("DistAcc/" + mode, np.mean(np.where(np.asarray(train_err) <= 0.1, 1, 0)), epoch)
     writer.add_scalar("TopKAcc/" + mode, np.mean(train_acctopk), epoch)
 
     print(

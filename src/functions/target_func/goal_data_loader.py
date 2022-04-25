@@ -82,7 +82,6 @@ class Loader:
     def build_dataset(self, split):
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
-        # splitScans = ['Adrian']
         node_feat1, node_feat2, infos = self.load_examples(splitScans)
         print("[{}]: Using {} houses".format(split, len(splitScans)))
         dataset = DistanceDatset(self.args, node_feat1, node_feat2, infos)

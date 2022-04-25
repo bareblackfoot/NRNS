@@ -116,7 +116,7 @@ class XRN(object):
         for pred, true in zip(output, dist_score):
             error.append(abs(true - pred).item())
         acc = np.mean(np.where(np.asarray(error) <= 0.1, 1, 0))
-        error = np.mean(error)
+        # error = np.mean(error)
         return error, acc
 
     def top_k_acc(self, output, dist_score):

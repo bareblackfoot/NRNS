@@ -152,11 +152,13 @@ class Loader:
     def build_dataset(self, split):
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
         splitScans = [x.strip() for x in open(splitFile, "r").readlines()]
-        splitScans  = ['Adrian']
+        # splitScans  = ['Adrian']
         data = []
         for house in splitScans:
             houseFile = self.args.clustered_graph_dir + house + "_graphs.msg"
-            data.append(msgpack_numpy.unpack(open(houseFile, "rb"), raw=False))
+            with open(houseFile, "rb") as f:
+                data.append(msgpack_numpy.unpack(f, raw=False))
+            # data.append(msgpack_numpy.unpack(open(houseFile, "rb"), raw=False))
 
         data_size = len(data)
         print("[{}]: Using {} houses".format("data", data_size))
