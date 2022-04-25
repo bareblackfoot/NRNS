@@ -70,7 +70,7 @@ class FMMPlanner:
         dx, dy = state[0] - int(state[0]), state[1] - int(state[1])
         mask = get_mask(dx, dy, scale)
         state = [int(x) for x in state]
-
+        center = self.fmm_dist[state[0], state[1]]
         dist = np.pad(
             self.fmm_dist,
             self.du,
@@ -78,12 +78,12 @@ class FMMPlanner:
             constant_values=self.fmm_dist.shape[0] ** 2,
         )
         subset = dist[
-            state[0] : state[0] + 2 * self.du + 1, state[1] : state[1] + 2 * self.du + 1
+            state[0] + self.du : state[0] + 2 * self.du + 1, state[1] + self.du : state[1] + 2 * self.du + 1
         ]
         mask = mask[:subset.shape[0],:subset.shape[1]]
         subset *= mask
         subset += (1 - mask) * self.fmm_dist.shape[0] ** 2
-        subset -= subset[self.du, self.du]
+        subset -= center
         subset[subset < -(self.du)] = 1
         (stg_x, stg_y) = np.unravel_index(np.argmin(subset), subset.shape)
         if subset[stg_x, stg_y] > -0.0001:
