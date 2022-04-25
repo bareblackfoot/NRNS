@@ -68,6 +68,8 @@ class FMMPlanner:
         scale = self.scale * 1.0
         state = [x / scale for x in state]
         dx, dy = state[0] - int(state[0]), state[1] - int(state[1])
+        state[0] = np.clip(state[0], 0, self.fmm_dist.shape[0]-1)
+        state[1] = np.clip(state[1], 0, self.fmm_dist.shape[1]-1)
         mask = get_mask(dx, dy, scale)
         state = [int(x) for x in state]
         center = self.fmm_dist[state[0], state[1]]
@@ -83,8 +85,14 @@ class FMMPlanner:
         mask = mask[:subset.shape[0],:subset.shape[1]]
         subset *= mask
         subset += (1 - mask) * self.fmm_dist.shape[0] ** 2
-        subset -= center
-        subset[subset < -(self.du)] = 1
+        try:
+            subset -= center
+        except:
+            pass
+        try:
+            subset[subset < -(self.du)] = 1
+        except:
+            pass
         (stg_x, stg_y) = np.unravel_index(np.argmin(subset), subset.shape)
         if subset[stg_x, stg_y] > -0.0001:
             replan = True
