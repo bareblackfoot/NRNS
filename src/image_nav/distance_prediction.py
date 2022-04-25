@@ -39,6 +39,14 @@ def gather_graph(agent):
         ue_nodes=torch.tensor(unexplored_indexs).cuda(),
         num_nodes=len(node_list),
     )
+    # geo_data = Data(
+    #     goal_feat=agent.goal_feat.clone().detach().cpu(),
+    #     x=agent.node_feats.clone().detach()[node_list].cpu(),
+    #     edge_index=adj.detach().cpu(),
+    #     edge_attr=edge_attr.detach().cpu(),
+    #     ue_nodes=torch.tensor(unexplored_indexs).detach().cpu(),
+    #     num_nodes=len(node_list),
+    # )
     # geo_data.x = geo_data.x.cuda()
     # geo_data.goal_feat = geo_data.goal_feat.cuda()
     return geo_data, unexplored_indexs
@@ -55,7 +63,7 @@ def predict_distances(agent):
     else:
         with torch.no_grad():
             geo_data, ue_nodes = gather_graph(agent)
-            agent.feat_model.module(geo_data)
+            # agent.feat_model.module(geo_data)
             output = agent.feat_model([geo_data]).detach().cpu().squeeze(1)
             pred_dists = 10 * (1 - output)[ue_nodes]
             pred_dists = pred_dists.sqrt()

@@ -4,6 +4,7 @@ import numpy as np
 from src.functions.target_func.switch_model import SwitchMLP
 from src.functions.target_func.goal_model import GoalMLP
 from src.functions.feat_pred_fuc.deepgcn import TopoGCN
+from torch_geometric.nn import DataParallel
 
 """Evaluate Episode"""
 
@@ -53,12 +54,7 @@ def load_models(args):
     model_goal.eval()
 
     """Load Distance function"""
-    # model_feat_pred = TopoGCN()
-    # model_feat_pred.load_state_dict(torch.load(args.model_dir + args.distance_model_path))#.module
-    # model_goal.to(args.device)
     model_feat_pred = TopoGCN()
-    # model_feat_pred = torch.load(args.model_dir + args.distance_model_path)#.module
-    # print(sum(p.numel() for p in model_feat_pred.parameters()))
     pretrained_state = torch.load(args.model_dir + args.distance_model_path)
     prefix = "module."
     model_feat_pred.load_state_dict(
@@ -68,6 +64,7 @@ def load_models(args):
             if k.startswith(prefix)
         }
     )
+    model_feat_pred = DataParallel(model_feat_pred)
 
     model_feat_pred.to(args.device)
     model_feat_pred.eval()
