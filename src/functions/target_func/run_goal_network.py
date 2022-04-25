@@ -17,7 +17,7 @@ from src.utils.cfg import input_paths
 # Training settings
 parser = argparse.ArgumentParser()
 parser = input_paths(parser)
-parser.add_argument("--run_name", type=str, default="goal_mlp4")
+parser.add_argument("--run_name", type=str, default="goal_mlp5")
 parser.add_argument("--train", action="store_true", default=True)
 parser.add_argument("--node_feat_size", type=int, default=512)
 parser.add_argument("--batch_size", type=int, default=30)

@@ -29,55 +29,55 @@ class Loader:
                 dist_ratio = d["geodesic"] / (d["euclidean"] + 0.00001)
 
                 if (
-                    (
-                        abs(d["rotation_diff"]) <= 60
-                        and d["geodesic"] <= 1
-                        and d["euclidean"] <= 1
-                        and dist_ratio <= 1.1
-                    )
-                    or (
-                        abs(d["rotation_diff"]) <= 45
+                        not (
+                                abs(d["rotation_diff"]) <= 45
+                                and d["geodesic"] <= 1
+                                and d["euclidean"] <= 1
+                                and dist_ratio <= 1.1
+                        )
+                        or not (
+                        abs(d["rotation_diff"]) <= 25
                         and d["geodesic"] <= 2.25
                         and d["euclidean"] <= 2.25
                         and dist_ratio <= 1.01
-                    )
-                    or (
-                        abs(d["rotation_diff"]) <= 25
+                )
+                        or not (
+                        abs(d["rotation_diff"]) <= 15
                         and d["geodesic"] <= 3.5
                         and d["euclidean"] <= 3.5
                         and dist_ratio <= 1.001
-                    )
+                )
                 ):
-                    # continue
-                    trajectory = d["traj"]
+                    continue
+                trajectory = d["traj"]
 
-                    node_feat1.append(feats[trajectory][str(d["n1"])])
-                    node_feat2.append(feats[trajectory][str(d["n2"])])
+                node_feat1.append(feats[trajectory][str(d["n1"])])
+                node_feat2.append(feats[trajectory][str(d["n2"])])
 
-                    infoFile = trajectory_info_dir + trajectory + ".msg"
-                    states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
-                    start_pos = states[d["n1"]][0]
-                    start_rot = states[d["n1"]][1]
-                    goal_pos = states[d["n2"]][0]
-                    rho, phi = get_relative_location(start_pos, start_rot, goal_pos)
+                infoFile = trajectory_info_dir + trajectory + ".msg"
+                states = msgpack_numpy.unpack(open(infoFile, "rb"), raw=False)["states"]
+                start_pos = states[d["n1"]][0]
+                start_rot = states[d["n1"]][1]
+                goal_pos = states[d["n2"]][0]
+                rho, phi = get_relative_location(start_pos, start_rot, goal_pos)
 
-                    infos.append(
-                        [
-                            d["scan_name"],
-                            d["traj"],
-                            phi,
-                            rho,
-                            start_pos,
-                            start_rot,
-                            goal_pos,
-                        ]
-                    )
+                infos.append(
+                    [
+                        d["scan_name"],
+                        d["traj"],
+                        phi,
+                        rho,
+                        start_pos,
+                        start_rot,
+                        goal_pos,
+                    ]
+                )
 
-        return (
-            node_feat1,
-            node_feat2,
-            infos,
-        )
+            return (
+                node_feat1,
+                node_feat2,
+                infos,
+            )
 
     def build_dataset(self, split):
         splitFile = self.args.data_splits + "scenes_" + split + ".txt"
