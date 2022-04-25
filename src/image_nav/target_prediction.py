@@ -10,7 +10,7 @@ predict if you want to switch to local navigation
 """
 
 def predict_end_exploration(args, agent, visualizer):
-    switchThreshold = 0.55
+    switchThreshold = 0.3
     switch = False
     with torch.no_grad():
         batch_goal = agent.goal_feat.clone().detach()

@@ -58,16 +58,17 @@ def evaluate(model, train_iterator):
         eval_acc.append(dist_acc)
         eval_acctopk.append(topk_acc)
     eval_err = np.concatenate(eval_err)
+    eval_acc = np.mean(np.where(np.asarray(eval_err) <= 0.1, 1, 0))
     print(
         "Epoch: {:02d}".format(epoch + 1),
         "--Eval:",
         "eval_loss: {:.4f}".format(np.mean(eval_loss)),
         "eval_dist_err: {:.4f}".format(np.mean(eval_err)),
-        "eval_dist_acc: {:.4f}".format(np.mean(np.where(np.asarray(eval_err) <= 0.1, 1, 0))),
+        "eval_dist_acc: {:.4f}".format(eval_acc),
         "eval_topk_acc: {:.4f}".format(np.mean(eval_acctopk)),
     )
 
-    return np.mean(eval_acctopk)
+    return eval_acc
 
 
 def train(model, train_iterator):

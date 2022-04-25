@@ -47,7 +47,7 @@ class XRN(object):
             print("Let's use", torch.cuda.device_count(), "GPUs!")
             self.model = nn.DataParallel(self.model)
         self.model.to(self.device)
-        self.learning_rate = 0.00005
+        self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4
         )
