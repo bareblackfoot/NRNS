@@ -29,7 +29,6 @@ def predict_end_exploration(args, agent, visualizer):
             )
             rho = rho.cpu().detach().item()
             phi = phi.cpu().detach().item()
-
             localnav(agent, rho, phi, visualizer)
 
         else:

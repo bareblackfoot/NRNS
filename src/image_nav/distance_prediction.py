@@ -68,7 +68,7 @@ def predict_distances(agent):
             geo_data, ue_nodes = gather_graph(agent)
             # agent.feat_model.module(geo_data)
             output = agent.feat_model([geo_data]).detach().cpu().squeeze(1)
-            pred_dists = 10 * (1 - output)[ue_nodes] #(1 - x)*10  = min(valid_geo ** 2, 10.0)
+            pred_dists = 10 * (1 - output)[ue_nodes] #(1 - x)*10  = min(valid_geo, 10.0)
             pred_dists = pred_dists.sqrt()
             total_cost = add_travel_distance(agent, pred_dists, rot_thres=0.25)
             next_node = agent.unexplored_nodes[total_cost.argmin()]

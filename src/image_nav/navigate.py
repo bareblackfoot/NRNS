@@ -39,7 +39,7 @@ def single_image_nav(agent, visualizer, args):
         3) End the navigation if no more nodes to explore 
         """
         if len(agent.unexplored_nodes) == 0:
-            print("no more to explore")
+            # print("no more to explore")
             break
 
         """
@@ -77,10 +77,10 @@ def single_image_nav(agent, visualizer, args):
             agent.node_rots[closest_connected].numpy()
         )
 
-        # if closest_connected != agent.current_node:
-        #     closest_pose, closest_rot = backtrack(agent, closest_connected, visualizer)
-        #     if closest_pose is None:
-        #         break
+        if closest_connected != agent.current_node:
+            closest_pose, closest_rot = backtrack(agent, closest_connected, visualizer)
+            if closest_pose is None:
+                break
 
         angle_connected = round(
             diff_rotation_signed(
@@ -178,7 +178,8 @@ def backtrack(agent, closest_connected, visualizer):
             obs, curr_pose, curr_rot = agent.take_step("left")
         else:
             obs, curr_pose, curr_rot = agent.take_step("right")
-
+        if agent.visualize:
+            visualizer.update(agent, obs)
     closest_pose = curr_pose
     closest_rot = quaternion.from_float_array(curr_rot)
     return closest_pose, closest_rot
