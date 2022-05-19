@@ -134,35 +134,36 @@ def backtrack(agent, closest_connected, visualizer):
     terminate_local = 0
     delta_dist, delta_rot = get_relative_location(start_pos, start_rot, goal_pos)
     if delta_dist > 0.001 or abs(np.sin(delta_rot)) > 0.001:
-        agent.prev_poses.append([start_pos, start_rot])
-        local_agent.update_local_map(
-            np.expand_dims(agent.sim.get_sensor_observations()["depth"]/10., axis=2)
-        )
-        local_agent.set_goal(delta_dist, delta_rot)
-        # try:
-        action, terminate_local = local_agent.navigate_local()
-        for _ in range(50):
-            obs = agent.sim.step(action)
-            if agent.visualize:
-                visualizer.update(agent, obs)
-            curr_depth_img = obs["depth"]
-            curr_pose = agent.sim.get_agent_state().position
-            # curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
-            # delta_dist, delta_rot = get_relative_location(curr_pose, curr_rot, goal_pos)
-            # local_agent.set_goal(delta_dist, delta_rot)
-            local_agent.new_sim_origin = get_sim_location(
-                curr_pose, agent.sim.get_agent_state().rotation
+        try:
+            agent.prev_poses.append([start_pos, start_rot])
+            local_agent.update_local_map(
+                np.expand_dims(agent.sim.get_sensor_observations()["depth"]/10., axis=2)
             )
-            local_agent.update_local_map(curr_depth_img)
+            local_agent.set_goal(delta_dist, delta_rot)
+            # try:
             action, terminate_local = local_agent.navigate_local()
-            agent.steps += 1
-            agent.length_taken += np.linalg.norm(curr_pose - prev_pos)
-            prev_pos = curr_pose
-            if terminate_local == 1:
-                break
-        # except:
-        #     print("ERROR: local navigation through error")
-        #     return None, None
+            for _ in range(50):
+                obs = agent.sim.step(action)
+                if agent.visualize:
+                    visualizer.update(agent, obs)
+                curr_depth_img = obs["depth"]
+                curr_pose = agent.sim.get_agent_state().position
+                # curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
+                # delta_dist, delta_rot = get_relative_location(curr_pose, curr_rot, goal_pos)
+                # local_agent.set_goal(delta_dist, delta_rot)
+                local_agent.new_sim_origin = get_sim_location(
+                    curr_pose, agent.sim.get_agent_state().rotation
+                )
+                local_agent.update_local_map(curr_depth_img)
+                action, terminate_local = local_agent.navigate_local()
+                agent.steps += 1
+                agent.length_taken += np.linalg.norm(curr_pose - prev_pos)
+                prev_pos = curr_pose
+                if terminate_local == 1:
+                    break
+        except:
+            print("ERROR: local navigation through error")
+            return None, None
 
     curr_pose = agent.sim.get_agent_state().position
     curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
