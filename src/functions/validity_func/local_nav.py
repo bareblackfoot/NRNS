@@ -48,8 +48,8 @@ class LocalAgent(object):
     def initialize_local_map_pose(self):
         self.mapper.reset_map()
         self.x_gt, self.y_gt, self.o_gt = (
-            self.map_size_cm / 2.0,
-            self.map_size_cm / 2.0,
+            self.map_size_cm / 100.0 / 2.0,
+            self.map_size_cm / 100.0 / 2.0,
             0.0,
         )
         self.reset_goal = True

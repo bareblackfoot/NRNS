@@ -26,14 +26,17 @@ def gather_graph(agent):
             origin_nodes.append(node_list.index(e[0]))
             edge_rot.append(e[2]["rotation"])
 
+    feats = agent.node_feats.clone().detach()
     unexplored_indexs = []
+    # connected_nodes = {}
     for i, n in enumerate(agent.graph):
         if agent.graph.nodes.data()[n]["status"] == "unexplored":
             unexplored_indexs.append(i)
+            # connected_nodes[i] = [edge[0] for edge in adj.T.cpu().detach().numpy() if edge[1]==i] + [edge[1] for edge in adj.T.cpu().detach().numpy() if edge[0]==i]
 
     geo_data = Data(
         goal_feat=agent.goal_feat.clone().detach(),
-        x=agent.node_feats.clone().detach()[node_list],
+        x=feats[node_list],
         edge_index=adj.cuda(),
         edge_attr=edge_attr.cuda(),
         ue_nodes=torch.tensor(unexplored_indexs).cuda(),
@@ -65,7 +68,7 @@ def predict_distances(agent):
             geo_data, ue_nodes = gather_graph(agent)
             # agent.feat_model.module(geo_data)
             output = agent.feat_model([geo_data]).detach().cpu().squeeze(1)
-            pred_dists = 10 * (1 - output)[ue_nodes]
+            pred_dists = 10 * (1 - output)[ue_nodes] #(1 - x)*10  = min(valid_geo ** 2, 10.0)
             pred_dists = pred_dists.sqrt()
             total_cost = add_travel_distance(agent, pred_dists, rot_thres=0.25)
             next_node = agent.unexplored_nodes[total_cost.argmin()]

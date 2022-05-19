@@ -128,7 +128,7 @@ Add unexplored nodes in agents graph
 
 
 def add_ghost_node(agent, node):
-    feat = None
+    feat = agent.node_feats[agent.current_node].reshape(-1, 512)
     agent.add_node(node[0:3, 3], node[0:3, 0:3], feat)
     edge_attr, delta_rot = get_edge_attr(
         agent.current_pos.numpy(),
@@ -137,6 +137,9 @@ def add_ghost_node(agent, node):
         quaternion.as_float_array(quaternion.from_rotation_matrix(node[0:3, 0:3])),
     )
     agent.add_edge([agent.current_node, agent.total_nodes - 1], edge_attr, delta_rot)
+    connected_nodes = [edge[0] for edge in agent.graph.edges if edge[1] == agent.total_nodes - 1] + [edge[1] for edge in agent.graph.edges if edge[0] == agent.total_nodes - 1]
+    if len(connected_nodes) > 1:
+        print("aa")
 
 
 """
@@ -146,7 +149,7 @@ Predict geometrically explorable areas using depth
 
 def predict_validity(agent, addbackwards):
     # Test angles
-    angles = [0, -15, 15, -30, 30, -45, 45, -55, 55]
+    angles = [0, -15, 15, -30, 30, -45, 45, -60, 60]
     # Get projection map
     pano_mapper = build_mapper()
     proj_map, exp_map, wall_map = get_panorama_and_projection(
@@ -154,12 +157,12 @@ def predict_validity(agent, addbackwards):
     )
 
     # Validity based on depth
-    radius = 1.5
+    # radius = 1.5
     labels = get_labels(
-        radius,
+        agent.edge_length,
         angles,
-        wall_map,
         proj_map,
+        exp_map,
         agent.current_pos.detach().clone().numpy(),
         quaternion.from_float_array(agent.current_rot.detach().clone().numpy()),
         agent.map_size_cm,
@@ -176,7 +179,6 @@ def predict_validity(agent, addbackwards):
         np.asarray([0, 0, -agent.edge_length]),
     )
     ghost_nodes = []
-    angles = [0, -15, 15, -30, 30, -45, 45, -60, 60]
     for ang, label in zip(angles, labels):
         if label == 0.0:
             continue

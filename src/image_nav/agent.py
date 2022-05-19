@@ -30,7 +30,7 @@ class Agent:
         self.node_feat_size = 512
         self.dist_thresh = 0.25
         self.rot_thres = 45
-        self.edge_length = 1
+        self.edge_length = 1.0
         self.map_size_cm = 1200
         self.map_resolution = 5
         self.visualize = args.visualize

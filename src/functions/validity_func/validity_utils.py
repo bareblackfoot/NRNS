@@ -160,6 +160,18 @@ def sector_mask(shape, centre, radius, angle_range):
 import math
 
 
+# def get_patch_coordinates(angles, goal, pano_radius):
+#     dist = pano_radius
+#     coords = []
+#     # 120 FOV -> crop to 110 get the following angles
+#     # angles = [-55, -45, -30, -15, 0, 15, 30, 45, 55]
+#     for ang in angles:
+#         ang = math.radians(ang)
+#         y = int(dist * np.sin(ang) + goal[0])
+#         x = int(dist * np.cos(ang) + goal[1])
+#         coords.append([y, x])
+#     return coords
+
 def get_patch_coordinates(angles, goal, pano_radius):
     dist = pano_radius
     coords = []
@@ -193,25 +205,30 @@ def get_labels(
     map_size_cm,
     map_resolution,
 ):
-    selem = skimage.morphology.disk(5 / map_resolution)
     labels = []
 
-    small_pano_radius = (map_size_cm / map_resolution) / 2.0 / 3
+    small_pano_radius = radius / (map_resolution / 100.)
     goal_init = [map_size_cm / map_resolution / 2.0, map_size_cm / map_resolution / 2.0]
 
-    traversible = skimage.morphology.binary_dilation(proj_map, selem) != True
+    traversible = skimage.morphology.binary_dilation(proj_map, skimage.morphology.disk(2)) != True
     planner = FMMPlanner(traversible, 360 // 10, 1)
     planner.set_goal(goal_init)
 
-    coords1 = get_patch_coordinates(angles, goal_init, goal_init[0])
-    coords2 = get_patch_coordinates(angles, goal_init, small_pano_radius)
+    # coords1 = get_patch_coordinates(angles, goal_init, goal_init[0])
+    coords = get_patch_coordinates(angles, goal_init, small_pano_radius)
 
-    for coord1, coord2 in zip(coords1, coords2):
-        if planner.fmm_dist[coord1[0], coord1[1]] < goal_init[0] * 1.05:
-            label = 1.0
-        elif planner.fmm_dist[coord2[0], coord2[1]] < small_pano_radius * 1.025:
+    for coord in coords:
+        if planner.fmm_dist[coord[0], coord[1]] <= small_pano_radius:
             label = 1.0
         else:
             label = 0.0
         labels.append(label)
+    # for coord1, coord2 in zip(coords1, coords2):
+        # if planner.fmm_dist[coord1[0], coord1[1]] < goal_init[0] * 1.05:
+        #     label = 1.0
+        # elif planner.fmm_dist[coord2[0], coord2[1]] < small_pano_radius * 1.025:
+        #     label = 1.0
+        # else:
+        #     label = 0.0
+        # labels.append(label)
     return labels

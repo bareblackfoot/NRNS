@@ -63,7 +63,7 @@ def single_image_nav(agent, visualizer, args):
 
         next_pos = agent.node_poses[next_node]
         next_rot = agent.node_rots[next_node]
-        for edge in [list(e) for e in agent.graph.edges]:
+        for edge in [list(e) for e in agent.graph.edges]: # if edge[0] == agent.current_node:
             if agent.graph.nodes[edge[0]]["status"] == "explored":
                 if edge[1] == next_node:
                     closest_pose = agent.node_poses[edge[0]].numpy()
@@ -77,10 +77,10 @@ def single_image_nav(agent, visualizer, args):
             agent.node_rots[closest_connected].numpy()
         )
 
-        if closest_connected != agent.current_node:
-            closest_pose, closest_rot = backtrack(agent, closest_connected, visualizer)
-            if closest_pose is None:
-                break
+        # if closest_connected != agent.current_node:
+        #     closest_pose, closest_rot = backtrack(agent, closest_connected, visualizer)
+        #     if closest_pose is None:
+        #         break
 
         angle_connected = round(
             diff_rotation_signed(
@@ -133,12 +133,13 @@ def backtrack(agent, closest_connected, visualizer):
     prev_pos = start_pos
     terminate_local = 0
     delta_dist, delta_rot = get_relative_location(start_pos, start_rot, goal_pos)
-    agent.prev_poses.append([start_pos, start_rot])
-    local_agent.update_local_map(
-        np.expand_dims(agent.sim.get_sensor_observations()["depth"], axis=2)
-    )
-    local_agent.set_goal(delta_dist, delta_rot)
-    try:
+    if delta_dist > 0.001 or abs(np.sin(delta_rot)) > 0.001:
+        agent.prev_poses.append([start_pos, start_rot])
+        local_agent.update_local_map(
+            np.expand_dims(agent.sim.get_sensor_observations()["depth"]/10., axis=2)
+        )
+        local_agent.set_goal(delta_dist, delta_rot)
+        # try:
         action, terminate_local = local_agent.navigate_local()
         for _ in range(50):
             obs = agent.sim.step(action)
@@ -146,8 +147,9 @@ def backtrack(agent, closest_connected, visualizer):
                 visualizer.update(agent, obs)
             curr_depth_img = obs["depth"]
             curr_pose = agent.sim.get_agent_state().position
-            curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
-            delta_dist, delta_rot = get_relative_location(curr_pose, curr_rot, goal_pos)
+            # curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
+            # delta_dist, delta_rot = get_relative_location(curr_pose, curr_rot, goal_pos)
+            # local_agent.set_goal(delta_dist, delta_rot)
             local_agent.new_sim_origin = get_sim_location(
                 curr_pose, agent.sim.get_agent_state().rotation
             )
@@ -158,10 +160,12 @@ def backtrack(agent, closest_connected, visualizer):
             prev_pos = curr_pose
             if terminate_local == 1:
                 break
-    except:
-        print("ERROR: local navigation through error")
-        return None, None
+        # except:
+        #     print("ERROR: local navigation through error")
+        #     return None, None
 
+    curr_pose = agent.sim.get_agent_state().position
+    curr_rot = quaternion.as_float_array(agent.sim.get_agent_state().rotation)
     angle_connected = round(
         diff_rotation_signed(
             quaternion.from_float_array(curr_rot),

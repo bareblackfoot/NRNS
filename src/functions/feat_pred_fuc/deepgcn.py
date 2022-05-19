@@ -21,10 +21,10 @@ class TopoGCN(nn.Module):
 
         """v2: graph conv layers"""
         self.conv1 = CGConv(
-            channels=input_size, dim=edge_size, batch_norm="add", bias=True
+            channels=input_size, dim=edge_size
         )
         self.conv2 = CGConv(
-            channels=input_size, dim=edge_size, batch_norm="add", bias=True
+            channels=input_size, dim=edge_size
         )
         self.conv3 = GCNConv(input_size, hidden_size)
         self.conv4 = GCNConv(hidden_size, hidden_size)
