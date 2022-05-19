@@ -95,7 +95,7 @@ class Loader:
             adj_matrix.append([prev_index, new_index])
             edge_pos.append([prev_pos, valid_point[1][0:3, 3]])
             valid_geo = self.geo_dist_valid(index, goal_index, node_pos, data_obj)
-            valid_geo = 1 - min(valid_geo ** 2, 10.0) / 10.0
+            valid_geo = 1 - min(valid_geo, 10.0) / 10.0
             labels.append(valid_geo)
             pred_feat.append(new_index)
 
