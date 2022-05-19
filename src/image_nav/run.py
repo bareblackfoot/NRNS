@@ -136,7 +136,7 @@ def main(args):
                 visualizer.create_layout(agent, episode_id)
 
         pbar.update(1)
-        pbar.set_description('Success %.3f' % (np.mean(rates["success"])))
+        pbar.set_description('Success %.3f SPL %.3f' % (np.mean(rates["success"]), np.mean(rates["spl"])))
 
     """Print Stats"""
     print("\nType of Run: ")
